@@ -4,188 +4,199 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>V02 — Student Locality & Geographic Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    * { box-sizing: border-box; }
-    body { font-family: system-ui, -apple-system, sans-serif; background-color: #f8fafc; color: #0f172a; margin: 0; padding: 24px; }
-    .header { background: #1e293b; color: #ffffff; padding: 20px; border-radius: 12px; margin-bottom: 24px; }
-    .header h1 { margin: 0 0 8px 0; font-size: 22px; }
-    .header p { margin: 0; opacity: 0.85; font-size: 14px; }
-    
-    .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 24px; }
-    .card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-    .card-label { font-size: 11px; color: #64748b; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
-    .card-value { font-size: 28px; font-weight: bold; color: #0f172a; margin: 8px 0; }
-    .card-subtext { font-size: 12px; color: #0284c7; }
-
-    .main-layout { display: grid; grid-template-columns: 320px 1fr; gap: 24px; }
-    @media (max-width: 900px) { .main-layout { grid-template-columns: 1fr; } }
-
-    .panel { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; height: fit-content; }
-    .panel h3 { margin-top: 0; margin-bottom: 16px; font-size: 16px; color: #334155; }
-
-    .form-group { margin-bottom: 12px; }
-    .form-group label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px; color: #475569; }
-    .form-group input, .form-group select { width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 13px; outline: none; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-
-    .btn-primary { width: 100%; background: #2563eb; color: #ffffff; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; }
-    .btn-primary:hover { background: #1d4ed8; }
-    .btn-cancel { width: 100%; background: #64748b; color: #ffffff; border: none; padding: 8px; border-radius: 6px; margin-top: 8px; cursor: pointer; font-size: 13px; }
-
-    .controls-row { display: flex; gap: 12px; margin-bottom: 16px; }
-    .controls-row input { flex: 1; padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 13px; }
-    .controls-row select { padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 13px; }
-
-    table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
-    th { padding: 10px; border-bottom: 2px solid #e2e8f0; background: #f8fafc; color: #475569; }
-    td { padding: 10px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
-
-    .badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; display: inline-block; }
-    .badge-Local { background: #d1fae5; color: #065f46; }
-    .badge-District { background: #e0f2fe; color: #075985; }
-    .badge-Within-State { background: #fef3c7; color: #92400e; }
-    .badge-Other-State { background: #ffedd5; color: #9a3412; }
-    .badge-International { background: #fce7f3; color: #9d174d; }
-
-    .btn-edit { background: #f1f5f9; border: 1px solid #cbd5e1; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; color: #334155; }
-    .btn-edit:hover { background: #e2e8f0; }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+    }
   </style>
 </head>
-<body>
+<body class="bg-slate-50 text-slate-900 min-h-screen p-4 md:p-6">
 
-  <!-- HEADER -->
-  <div class="header">
-    <h1>V02 — Student Locality & Geographic Dashboard</h1>
-    <p><strong>Reference Campus:</strong> National Institute of Technology | Kochi, Ernakulam Dist, Kerala, India</p>
-  </div>
-
-  <!-- ACCREDITATION DASHBOARD -->
-  <div class="dashboard-grid">
-    <div class="card">
-      <div class="card-label">Local</div>
-      <div class="card-value" id="count-local">0</div>
-      <div class="card-subtext" id="pct-local">0% of total</div>
-    </div>
-    <div class="card">
-      <div class="card-label">District</div>
-      <div class="card-value" id="count-district">0</div>
-      <div class="card-subtext" id="pct-district">0% of total</div>
-    </div>
-    <div class="card">
-      <div class="card-label">Within State</div>
-      <div class="card-value" id="count-state">0</div>
-      <div class="card-subtext" id="pct-state">0% of total</div>
-    </div>
-    <div class="card">
-      <div class="card-label">Other State</div>
-      <div class="card-value" id="count-otherstate">0</div>
-      <div class="card-subtext" id="pct-otherstate">0% of total</div>
-    </div>
-    <div class="card">
-      <div class="card-label">International</div>
-      <div class="card-value" id="count-intl">0</div>
-      <div class="card-subtext" id="pct-intl">0% of total</div>
-    </div>
-  </div>
-
-  <!-- MAIN WORKFLOW AREA -->
-  <div class="main-layout">
+  <div class="max-w-7xl mx-auto space-y-6">
     
-    <!-- LEFT PANEL: FORM -->
-    <div class="panel">
-      <h3 id="form-title">Add New Student Record</h3>
-      <form id="student-form">
-        <input type="hidden" id="edit-id" value="">
+    <!-- HEADER -->
+    <header class="bg-slate-900 text-white p-5 rounded-2xl shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div>
+        <h1 class="text-xl md:text-2xl font-bold tracking-tight">V02 — Student Locality & Geographic Dashboard</h1>
+        <p class="text-slate-300 text-sm mt-1">
+          <span class="font-semibold text-white">Reference Campus:</span> National Institute of Technology | Kochi, Ernakulam Dist, Kerala, India
+        </p>
+        <div id="storage-status" class="mt-2 text-xs text-emerald-400 flex items-center gap-2">
+          <span id="storage-ping" class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span id="storage-status-text">Initializing Storage Sync...</span>
+        </div>
+      </div>
+      
+      <div class="flex flex-wrap items-center gap-2">
+        <button id="btn-export" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded-lg transition-colors border border-slate-700 flex items-center gap-1.5">
+          <span>📥</span> Export JSON
+        </button>
+        <button id="btn-import-trigger" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded-lg transition-colors border border-slate-700 flex items-center gap-1.5">
+          <span>📤</span> Import JSON
+        </button>
+        <input type="file" id="import-file" accept=".json" class="hidden">
+        <button id="btn-prompt-reset" class="px-3 py-2 bg-rose-600/90 hover:bg-rose-600 text-white text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5">
+          <span>↺</span> Reset Demo Data
+        </button>
+      </div>
+    </header>
+
+    <!-- METRICS DASHBOARD -->
+    <section>
+      <h2 class="text-sm font-bold uppercase tracking-wider text-slate-500 mb-3">Accreditation Geographic Distribution</h2>
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
         
-        <div class="form-group">
-          <label for="name">Full Name</label>
-          <input type="text" id="name" required placeholder="e.g. John Doe">
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+          <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Local</span>
+          <div id="count-local" class="text-2xl md:text-3xl font-bold text-slate-900 my-1">0</div>
+          <span id="pct-local" class="text-xs text-emerald-600 font-medium">0% of total</span>
         </div>
 
-        <div class="form-group">
-          <label for="program">Program</label>
-          <input type="text" id="program" required value="B.Tech CSE">
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+          <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">District</span>
+          <div id="count-district" class="text-2xl md:text-3xl font-bold text-slate-900 my-1">0</div>
+          <span id="pct-district" class="text-xs text-sky-600 font-medium">0% of total</span>
         </div>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label for="city">City</label>
-            <input type="text" id="city" required placeholder="Kochi">
-          </div>
-          <div class="form-group">
-            <label for="district">District</label>
-            <input type="text" id="district" required placeholder="Ernakulam">
-          </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+          <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Within State</span>
+          <div id="count-state" class="text-2xl md:text-3xl font-bold text-slate-900 my-1">0</div>
+          <span id="pct-state" class="text-xs text-amber-600 font-medium">0% of total</span>
         </div>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label for="state">State</label>
-            <input type="text" id="state" required placeholder="Kerala">
-          </div>
-          <div class="form-group">
-            <label for="country">Country</label>
-            <input type="text" id="country" required value="India">
-          </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+          <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Other State</span>
+          <div id="count-otherstate" class="text-2xl md:text-3xl font-bold text-slate-900 my-1">0</div>
+          <span id="pct-otherstate" class="text-xs text-orange-600 font-medium">0% of total</span>
         </div>
 
-        <button type="submit" class="btn-primary" id="form-submit-btn">Create & Auto-Classify</button>
-        <button type="button" class="btn-cancel" id="form-cancel-btn" style="display: none;" onclick="cancelEdit()">Cancel Edit</button>
-      </form>
-    </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center col-span-2 sm:col-span-1">
+          <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">International</span>
+          <div id="count-intl" class="text-2xl md:text-3xl font-bold text-slate-900 my-1">0</div>
+          <span id="pct-intl" class="text-xs text-pink-600 font-medium">0% of total</span>
+        </div>
 
-    <!-- RIGHT PANEL: SEARCH, FILTER & TABLE -->
-    <div class="panel">
-      <div class="controls-row">
-        <input type="text" id="search-input" placeholder="Search by name, ID, or city..." oninput="renderApp()">
-        <select id="filter-category" onchange="renderApp()">
-          <option value="All">All Locality Types</option>
-          <option value="Local">Local</option>
-          <option value="District">District</option>
-          <option value="Within State">Within State</option>
-          <option value="Other State">Other State</option>
-          <option value="International">International</option>
-        </select>
+      </div>
+    </section>
+
+    <!-- MAIN WORKFLOW AREA -->
+    <main class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      
+      <!-- LEFT FORM PANEL -->
+      <div class="lg:col-span-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm h-fit">
+        <h3 id="form-title" class="text-base font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100">Add New Student Record</h3>
+        
+        <form id="student-form" class="space-y-3">
+          <input type="hidden" id="edit-id" value="">
+          
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1" for="name">Full Name</label>
+            <input type="text" id="name" required placeholder="e.g. Aarav Sharma" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1" for="program">Program</label>
+            <input type="text" id="program" required value="B.Tech CSE" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1" for="city">City</label>
+              <input type="text" id="city" required placeholder="Kochi" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1" for="district">District</label>
+              <input type="text" id="district" required placeholder="Ernakulam" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1" for="state">State</label>
+              <input type="text" id="state" required placeholder="Kerala" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1" for="country">Country</label>
+              <input type="text" id="country" required value="India" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+            </div>
+          </div>
+
+          <button type="submit" id="form-submit-btn" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-colors mt-2">
+            Create & Auto-Classify
+          </button>
+          
+          <button type="button" id="form-cancel-btn" class="hidden w-full py-2 bg-slate-500 hover:bg-slate-600 text-white text-xs font-semibold rounded-lg transition-colors">
+            Cancel Edit
+          </button>
+        </form>
       </div>
 
-      <table>
-        <thead>
-          <tr>
-            <th>Student</th>
-            <th>Address Details</th>
-            <th>Derived Locality</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody id="student-table-body">
-          <!-- Rows rendered dynamically -->
-        </tbody>
-      </table>
-    </div>
+      <!-- RIGHT DATA TABLE PANEL -->
+      <div class="lg:col-span-8 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+        
+        <div class="flex flex-col sm:flex-row gap-3">
+          <div class="relative flex-1">
+            <input type="text" id="search-input" placeholder="Search student name, ID, or city..." class="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none">
+            <svg class="w-4 h-4 absolute left-3 top-2.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+          </div>
 
+          <select id="filter-category" class="px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+            <option value="All">All Categories</option>
+            <option value="Local">Local</option>
+            <option value="District">District</option>
+            <option value="Within State">Within State</option>
+            <option value="Other State">Other State</option>
+            <option value="International">International</option>
+          </select>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="w-full text-left text-xs md:text-sm">
+            <thead class="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+              <tr>
+                <th class="p-3">Student</th>
+                <th class="p-3">Address</th>
+                <th class="p-3">Derived Locality</th>
+                <th class="p-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="student-table-body" class="divide-y divide-slate-100">
+              <!-- Dynamic Rows -->
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+
+    </main>
   </div>
 
-  <script>
-    // Home Institution Reference Coordinates
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- CUSTOM CONFIRMATION MODAL -->
+  <div id="reset-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl border border-slate-100 space-y-4">
+      <h3 class="text-lg font-bold text-slate-900">Reset Demo Data?</h3>
+      <p class="text-xs text-slate-600">This will revert all student records back to the default 30 initial sample students across all connected sessions.</p>
+      <div class="flex gap-2 justify-end">
+        <button id="btn-modal-cancel" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-semibold rounded-lg transition-colors">Cancel</button>
+        <button id="btn-modal-confirm" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-lg transition-colors">Reset Data</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
     const INST = { city: "Kochi", district: "Ernakulam", state: "Kerala", country: "India" };
+    const LOCAL_STORAGE_KEY = 'v02_locality_students_cloud_v1';
 
-    // Dynamic Locality Classification Logic
-    function deriveLocality(address) {
-      const norm = (str) => (str || '').trim().toLowerCase();
-      const sameCountry = norm(address.country) === norm(INST.country);
-      const sameState = norm(address.state) === norm(INST.state);
-      const sameDistrict = norm(address.district) === norm(INST.district);
-      const sameCity = norm(address.city) === norm(INST.city);
-
-      if (!sameCountry) return "International";
-      if (!sameState) return "Other State";
-      if (!sameDistrict) return "Within State";
-      if (!sameCity) return "District";
-      return "Local";
-    }
-
-    // 30 Initial Seed Records spanning all 5 Locality Categories
-    let students = [
+    const DEFAULT_STUDENTS = [
       // Local
       { id: "STU1001", name: "Aarav Sharma", program: "B.Tech CSE", city: "Kochi", district: "Ernakulam", state: "Kerala", country: "India" },
       { id: "STU1002", name: "Ananya Nair", program: "B.Tech ECE", city: "Kochi", district: "Ernakulam", state: "Kerala", country: "India" },
@@ -227,88 +238,286 @@
       { id: "STU1030", name: "Mateo Garcia", program: "B.Tech CSE", city: "Madrid", district: "Madrid", state: "Madrid", country: "Spain" }
     ];
 
+    let students = [];
+    let db = null;
+    let auth = null;
+    let user = null;
+    let isCloudSyncActive = false;
+
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'student-locality-app';
+
+    async function initCloudStorage() {
+      try {
+        if (typeof __firebase_config !== 'undefined') {
+          const config = JSON.parse(__firebase_config);
+          const app = initializeApp(config);
+          auth = getAuth(app);
+          db = getFirestore(app);
+
+          if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+            user = (await signInWithCustomToken(auth, __initial_auth_token)).user;
+          } else {
+            user = (await signInWithCustomToken(auth, __initial_auth_token).catch(() => signInAnonymously(auth))).user;
+          }
+
+          if (user) {
+            isCloudSyncActive = true;
+            setupRealtimeSync();
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn("Cloud Storage initialization fallback to Local Storage:", err);
+      }
+
+      // Local storage fallback
+      fallbackToLocalStorage();
+    }
+
+    function setupRealtimeSync() {
+      const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'students');
+      
+      onSnapshot(colRef, (snapshot) => {
+        if (snapshot.empty) {
+          // Seed cloud database if empty
+          saveAllToCloud(DEFAULT_STUDENTS);
+        } else {
+          const cloudData = [];
+          snapshot.forEach(doc => {
+            cloudData.push(doc.data());
+          });
+          students = cloudData;
+          updateStorageStatus(true, `☁️ Cloud Sync Active • Live Persistent Database`);
+          renderApp();
+        }
+      }, (error) => {
+        console.error("Firestore onSnapshot error:", error);
+        fallbackToLocalStorage();
+      });
+    }
+
+    function fallbackToLocalStorage() {
+      isCloudSyncActive = false;
+      students = loadLocalStudents();
+      updateStorageStatus(false, `💾 Saved to Browser Storage (${new Date().toLocaleTimeString()})`);
+      renderApp();
+    }
+
+    function updateStorageStatus(isCloud, text) {
+      const textEl = document.getElementById('storage-status-text');
+      const pingEl = document.getElementById('storage-ping');
+      if (textEl) textEl.innerText = text;
+      if (pingEl) {
+        pingEl.className = isCloud 
+          ? "h-2 w-2 rounded-full bg-emerald-400 animate-pulse" 
+          : "h-2 w-2 rounded-full bg-sky-400";
+      }
+    }
+
+    function loadLocalStudents() {
+      try {
+        const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      } catch (e) {}
+      return JSON.parse(JSON.stringify(DEFAULT_STUDENTS));
+    }
+
+    async function persistStudents(updatedList) {
+      students = updatedList;
+      
+      // Always save copy to LocalStorage as double protection
+      try {
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(students));
+      } catch(e) {}
+
+      if (isCloudSyncActive && db && user) {
+        try {
+          await saveAllToCloud(students);
+          updateStorageStatus(true, `☁️ Cloud Synced • (${new Date().toLocaleTimeString()})`);
+        } catch (e) {
+          console.error("Cloud persist error:", e);
+        }
+      } else {
+        updateStorageStatus(false, `💾 Saved to Browser Storage (${new Date().toLocaleTimeString()})`);
+      }
+      
+      renderApp();
+    }
+
+    async function saveAllToCloud(dataList) {
+      if (!db || !user) return;
+      for (const item of dataList) {
+        const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'students', item.id);
+        await setDoc(docRef, item);
+      }
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function deriveLocality(address) {
+      const norm = (str) => (str || '').trim().toLowerCase();
+      const sameCountry = norm(address.country) === norm(INST.country);
+      const sameState = norm(address.state) === norm(INST.state);
+      const sameDistrict = norm(address.district) === norm(INST.district);
+      const sameCity = norm(address.city) === norm(INST.city);
+
+      if (!sameCountry) return "International";
+      if (!sameState) return "Other State";
+      if (!sameDistrict) return "Within State";
+      if (!sameCity) return "District";
+      return "Local";
+    }
+
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+      const toast = document.createElement('div');
+      const bg = type === 'success' ? 'bg-emerald-800 text-emerald-100 border-emerald-700' : 'bg-rose-800 text-rose-100 border-rose-700';
+      toast.className = `px-4 py-2.5 rounded-xl border ${bg} text-xs font-semibold shadow-lg transition-all duration-300 transform translate-y-2 pointer-events-auto`;
+      toast.innerText = message;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-4');
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
     function renderApp() {
-      // 1. Calculate Locality for each student
       const enriched = students.map(s => ({ ...s, category: deriveLocality(s) }));
 
-      // 2. Aggregate Metrics for Dashboard
       const total = enriched.length;
       const counts = { Local: 0, District: 0, "Within State": 0, "Other State": 0, International: 0 };
-      enriched.forEach(s => counts[s.category]++);
+      enriched.forEach(s => {
+        if (counts[s.category] !== undefined) counts[s.category]++;
+      });
 
-      document.getElementById('count-local').innerText = counts.Local;
-      document.getElementById('pct-local').innerText = ((counts.Local / total) * 100).toFixed(1) + '% of total';
+      const getPct = (cnt) => total > 0 ? ((cnt / total) * 100).toFixed(1) + '%' : '0%';
 
-      document.getElementById('count-district').innerText = counts.District;
-      document.getElementById('pct-district').innerText = ((counts.District / total) * 100).toFixed(1) + '% of total';
+      const setElText = (id, txt) => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = txt;
+      };
 
-      document.getElementById('count-state').innerText = counts["Within State"];
-      document.getElementById('pct-state').innerText = ((counts["Within State"] / total) * 100).toFixed(1) + '% of total';
+      setElText('count-local', counts.Local);
+      setElText('pct-local', getPct(counts.Local) + ' of total');
 
-      document.getElementById('count-otherstate').innerText = counts["Other State"];
-      document.getElementById('pct-otherstate').innerText = ((counts["Other State"] / total) * 100).toFixed(1) + '% of total';
+      setElText('count-district', counts.District);
+      setElText('pct-district', getPct(counts.District) + ' of total');
 
-      document.getElementById('count-intl').innerText = counts.International;
-      document.getElementById('pct-intl').innerText = ((counts.International / total) * 100).toFixed(1) + '% of total';
+      setElText('count-state', counts["Within State"]);
+      setElText('pct-state', getPct(counts["Within State"]) + ' of total');
 
-      // 3. Filter Table Results
-      const search = document.getElementById('search-input').value.toLowerCase();
-      const filter = document.getElementById('filter-category').value;
+      setElText('count-otherstate', counts["Other State"]);
+      setElText('pct-otherstate', getPct(counts["Other State"]) + ' of total');
+
+      setElText('count-intl', counts.International);
+      setElText('pct-intl', getPct(counts.International) + ' of total');
+
+      const searchEl = document.getElementById('search-input');
+      const search = searchEl ? searchEl.value.toLowerCase().trim() : '';
+      const filterEl = document.getElementById('filter-category');
+      const filter = filterEl ? filterEl.value : 'All';
 
       const filtered = enriched.filter(s => {
-        const matchesSearch = s.name.toLowerCase().includes(search) || s.id.toLowerCase().includes(search) || s.city.toLowerCase().includes(search);
+        const matchesSearch = s.name.toLowerCase().includes(search) || 
+                              s.id.toLowerCase().includes(search) || 
+                              s.city.toLowerCase().includes(search);
         const matchesCat = filter === 'All' || s.category === filter;
         return matchesSearch && matchesCat;
       });
 
-      // 4. Render Table HTML
+      const badgeStyles = {
+        'Local': 'bg-emerald-100 text-emerald-800 border-emerald-200',
+        'District': 'bg-sky-100 text-sky-800 border-sky-200',
+        'Within State': 'bg-amber-100 text-amber-800 border-amber-200',
+        'Other State': 'bg-orange-100 text-orange-800 border-orange-200',
+        'International': 'bg-pink-100 text-pink-800 border-pink-200'
+      };
+
       const tbody = document.getElementById('student-table-body');
+      if (!tbody) return;
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-400 font-medium">No student records found matching filter.</td></tr>`;
+        return;
+      }
+
       tbody.innerHTML = filtered.map(s => `
-        <tr>
-          <td>
-            <strong>${s.name}</strong><br>
-            <span style="font-size: 11px; color: #64748b;">${s.id} • ${s.program}</span>
+        <tr class="hover:bg-slate-50 transition-colors">
+          <td class="p-3">
+            <div class="font-bold text-slate-900">${escapeHtml(s.name)}</div>
+            <div class="text-xs text-slate-500">${escapeHtml(s.id)} • ${escapeHtml(s.program)}</div>
           </td>
-          <td>
-            ${s.city}, ${s.district}<br>
-            <span style="color: #64748b;">${s.state}, ${s.country}</span>
+          <td class="p-3">
+            <div class="text-slate-800">${escapeHtml(s.city)}, ${escapeHtml(s.district)}</div>
+            <div class="text-xs text-slate-500">${escapeHtml(s.state)}, ${escapeHtml(s.country)}</div>
           </td>
-          <td>
-            <span class="badge badge-${s.category.replace(/\s+/g, '-')}">${s.category}</span>
+          <td class="p-3">
+            <span class="px-2.5 py-1 rounded-full text-xs font-bold border ${badgeStyles[s.category] || 'bg-slate-100 text-slate-700'}">
+              ${escapeHtml(s.category)}
+            </span>
           </td>
-          <td>
-            <button class="btn-edit" onclick="editStudent('${s.id}')">Edit</button>
+          <td class="p-3 text-right">
+            <div class="flex items-center justify-end gap-1.5">
+              <button data-action="edit" data-id="${escapeHtml(s.id)}" class="btn-edit px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-md border border-slate-300 transition-colors">
+                Edit
+              </button>
+              <button data-action="delete" data-id="${escapeHtml(s.id)}" class="btn-delete px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-medium rounded-md border border-rose-200 transition-colors">
+                Delete
+              </button>
+            </div>
           </td>
         </tr>
       `).join('');
+
+      // Wire row edit/delete button listeners
+      document.querySelectorAll('.btn-edit').forEach(btn => {
+        btn.onclick = () => editStudent(btn.getAttribute('data-id'));
+      });
+      document.querySelectorAll('.btn-delete').forEach(btn => {
+        btn.onclick = () => deleteStudent(btn.getAttribute('data-id'));
+      });
     }
 
-    // FORM HANDLERS (Create / Update)
-    document.getElementById('student-form').addEventListener('submit', function(e) {
-      e.preventDefault();
+    async function handleFormSubmit(e) {
+      if (e) e.preventDefault();
+      
       const editId = document.getElementById('edit-id').value;
-      const name = document.getElementById('name').value;
-      const program = document.getElementById('program').value;
-      const city = document.getElementById('city').value;
-      const district = document.getElementById('district').value;
-      const state = document.getElementById('state').value;
-      const country = document.getElementById('country').value;
+      const name = document.getElementById('name').value.trim();
+      const program = document.getElementById('program').value.trim();
+      const city = document.getElementById('city').value.trim();
+      const district = document.getElementById('district').value.trim();
+      const state = document.getElementById('state').value.trim();
+      const country = document.getElementById('country').value.trim();
+
+      const updated = [...students];
 
       if (editId) {
-        // UPDATE
-        const idx = students.findIndex(s => s.id === editId);
+        const idx = updated.findIndex(s => s.id === editId);
         if (idx !== -1) {
-          students[idx] = { id: editId, name, program, city, district, state, country };
+          updated[idx] = { id: editId, name, program, city, district, state, country };
+          showToast(`Record updated for ${name}`);
         }
       } else {
-        // CREATE
-        const newId = `STU${1000 + students.length + 1}`;
-        students.unshift({ id: newId, name, program, city, district, state, country });
+        const newId = `STU${1000 + updated.length + 1}`;
+        updated.unshift({ id: newId, name, program, city, district, state, country });
+        showToast(`Created student ${name} (${newId})`);
       }
 
+      await persistStudents(updated);
       cancelEdit();
-      renderApp();
-    });
+    }
 
     function editStudent(id) {
       const s = students.find(item => item.id === id);
@@ -324,21 +533,100 @@
 
       document.getElementById('form-title').innerText = `Edit Address: ${s.id}`;
       document.getElementById('form-submit-btn').innerText = 'Update & Recalculate';
-      document.getElementById('form-cancel-btn').style.display = 'block';
+      document.getElementById('form-cancel-btn').classList.remove('hidden');
+    }
+
+    async function deleteStudent(id) {
+      const s = students.find(item => item.id === id);
+      const studentName = s ? s.name : id;
+      const updated = students.filter(item => item.id !== id);
+      
+      if (isCloudSyncActive && db && user) {
+        try {
+          await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'students', id));
+        } catch(e){}
+      }
+
+      showToast(`Deleted ${studentName}`);
+      await persistStudents(updated);
     }
 
     function cancelEdit() {
       document.getElementById('edit-id').value = '';
-      document.getElementById('student-form').reset();
+      const form = document.getElementById('student-form');
+      if (form) form.reset();
       document.getElementById('program').value = 'B.Tech CSE';
       document.getElementById('country').value = 'India';
       document.getElementById('form-title').innerText = 'Add New Student Record';
       document.getElementById('form-submit-btn').innerText = 'Create & Auto-Classify';
-      document.getElementById('form-cancel-btn').style.display = 'none';
+      document.getElementById('form-cancel-btn').classList.add('hidden');
     }
 
-    // Initial render
-    renderApp();
+    function promptReset() {
+      document.getElementById('reset-modal').classList.remove('hidden');
+    }
+
+    function closeResetModal() {
+      document.getElementById('reset-modal').classList.add('hidden');
+    }
+
+    async function confirmResetDemoData() {
+      closeResetModal();
+      const freshDefaults = JSON.parse(JSON.stringify(DEFAULT_STUDENTS));
+      await persistStudents(freshDefaults);
+      cancelEdit();
+      showToast("Demo dataset restored to clean baseline.");
+    }
+
+    function exportData() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(students, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `student_locality_data_${Date.now()}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      showToast("JSON file exported successfully.");
+    }
+
+    function importData(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        try {
+          const imported = JSON.parse(e.target.result);
+          if (Array.isArray(imported) && imported.length > 0) {
+            await persistStudents(imported);
+            cancelEdit();
+            showToast("JSON data imported successfully.");
+          } else {
+            showToast("Invalid JSON: Expected non-empty array.", "error");
+          }
+        } catch(err) {
+          showToast("Failed to parse JSON file.", "error");
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    document.addEventListener('DOMContentLoaded', async function() {
+      await initCloudStorage();
+
+      document.getElementById('student-form').addEventListener('submit', handleFormSubmit);
+      document.getElementById('form-cancel-btn').addEventListener('click', cancelEdit);
+      document.getElementById('search-input').addEventListener('input', renderApp);
+      document.getElementById('filter-category').addEventListener('change', renderApp);
+
+      document.getElementById('btn-export').addEventListener('click', exportData);
+      document.getElementById('btn-import-trigger').addEventListener('click', function() {
+        document.getElementById('import-file').click();
+      });
+      document.getElementById('import-file').addEventListener('change', importData);
+      document.getElementById('btn-prompt-reset').addEventListener('click', promptReset);
+      document.getElementById('btn-modal-cancel').addEventListener('click', closeResetModal);
+      document.getElementById('btn-modal-confirm').addEventListener('click', confirmResetDemoData);
+    });
   </script>
 </body>
 </html>
