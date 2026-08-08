@@ -24,6 +24,12 @@
     .leaflet-popup-content-wrapper {
       border-radius: 0.75rem;
       padding: 0.25rem;
+      background: #0f172a;
+      color: #f8fafc;
+      border: 1px solid #334155;
+    }
+    .leaflet-popup-tip {
+      background: #0f172a;
     }
   </style>
 </head>
@@ -50,7 +56,7 @@
       <div class="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
         <div id="storage-status" class="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs text-emerald-400 flex items-center gap-2">
           <span id="storage-ping" class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span id="storage-status-text">Initializing Storage...</span>
+          <span id="storage-status-text">Local Storage Active</span>
         </div>
 
         <!-- USER AUTHENTICATION BADGE & LOGIN TRIGGER -->
@@ -473,75 +479,87 @@
           </div>
           <div>
             <h3 class="text-lg font-bold text-white tracking-tight">Institutional Portal Login</h3>
-            <p class="text-xs text-slate-400">Student Locality Intelligence Dashboard</p>
+            <p class="text-xs text-slate-400">Role-Based Access Control</p>
           </div>
         </div>
         <button id="btn-login-close" class="text-slate-400 hover:text-slate-200 font-bold text-xl leading-none">&times;</button>
       </div>
 
-      <!-- ROLE PRESET SELECTOR -->
+      <!-- SECTION 1: ADMINISTRATORS (4 ADMINS) -->
       <div>
-        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Select Access Role</label>
-        <div class="grid grid-cols-3 gap-2">
-          <button type="button" data-role="admin" class="role-preset-btn p-2.5 rounded-xl border border-blue-500 bg-blue-500/10 text-blue-400 text-center transition flex flex-col items-center gap-1">
-            <span class="text-base">🎓</span>
-            <span class="text-[11px] font-bold">Admin</span>
-            <span class="text-[9px] text-slate-400">Full Access</span>
+        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Section 1: Administrators (Full Privileges - Password Req.)</label>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <button type="button" data-role="admin" data-admin="Thejes" class="admin-preset-btn p-2 rounded-xl border border-blue-500 bg-blue-500/10 text-blue-400 text-center transition flex flex-col items-center gap-1">
+            <span class="text-sm">👑</span>
+            <span class="text-[11px] font-bold">Thejes</span>
+            <span class="text-[9px] text-slate-400">Admin</span>
           </button>
-          <button type="button" data-role="faculty" class="role-preset-btn p-2.5 rounded-xl border border-slate-800 bg-slate-950/60 text-slate-400 hover:border-slate-700 text-center transition flex flex-col items-center gap-1">
-            <span class="text-base">🏫</span>
-            <span class="text-[11px] font-bold">Faculty</span>
-            <span class="text-[9px] text-slate-400">Edit Records</span>
+          <button type="button" data-role="admin" data-admin="Melbin" class="admin-preset-btn p-2 rounded-xl border border-slate-800 bg-slate-950/60 text-slate-400 hover:border-slate-700 text-center transition flex flex-col items-center gap-1">
+            <span class="text-sm">👑</span>
+            <span class="text-[11px] font-bold">Melbin</span>
+            <span class="text-[9px] text-slate-400">Admin</span>
           </button>
-          <button type="button" data-role="guest" class="role-preset-btn p-2.5 rounded-xl border border-slate-800 bg-slate-950/60 text-slate-400 hover:border-slate-700 text-center transition flex flex-col items-center gap-1">
-            <span class="text-base">👁️</span>
-            <span class="text-[11px] font-bold">Auditor</span>
-            <span class="text-[9px] text-slate-400">Read Only</span>
+          <button type="button" data-role="admin" data-admin="Nithin" class="admin-preset-btn p-2 rounded-xl border border-slate-800 bg-slate-950/60 text-slate-400 hover:border-slate-700 text-center transition flex flex-col items-center gap-1">
+            <span class="text-sm">👑</span>
+            <span class="text-[11px] font-bold">Nithin</span>
+            <span class="text-[9px] text-slate-400">Admin</span>
+          </button>
+          <button type="button" data-role="admin" data-admin="Shashidhara" class="admin-preset-btn p-2 rounded-xl border border-slate-800 bg-slate-950/60 text-slate-400 hover:border-slate-700 text-center transition flex flex-col items-center gap-1">
+            <span class="text-sm">👑</span>
+            <span class="text-[11px] font-bold">Shashidhara</span>
+            <span class="text-[9px] text-slate-400">Admin</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- SECTION 2: STUDENT & FACULTY (VIEWERS) -->
+      <div>
+        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Section 2: Student & Faculty (Quick Viewer Sign-In)</label>
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" data-role="student" data-admin="Aarav Shetty" class="admin-preset-btn p-2 rounded-xl border border-slate-800 bg-slate-950/60 text-slate-400 hover:border-slate-700 text-center transition flex flex-col items-center gap-1">
+            <span class="text-sm">🎒</span>
+            <span class="text-[11px] font-bold">Student Rep</span>
+            <span class="text-[9px] text-slate-400">Viewer Mode</span>
+          </button>
+          <button type="button" data-role="student" data-admin="Dr. Ramesh Rao" class="admin-preset-btn p-2 rounded-xl border border-slate-800 bg-slate-950/60 text-slate-400 hover:border-slate-700 text-center transition flex flex-col items-center gap-1">
+            <span class="text-sm">👨‍🏫</span>
+            <span class="text-[11px] font-bold">Faculty Member</span>
+            <span class="text-[9px] text-slate-400">Viewer Mode</span>
           </button>
         </div>
       </div>
 
       <!-- LOGIN FORM -->
       <form id="login-form" class="space-y-4 text-xs">
+        <input type="hidden" id="login-selected-admin" value="Thejes">
         <input type="hidden" id="login-selected-role" value="admin">
 
-        <div>
-          <label class="block font-semibold text-slate-300 mb-1" for="login-email">Institutional Email / Username</label>
-          <input type="text" id="login-email" required value="admin@kits.edu.in" placeholder="user@kits.edu.in" class="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 focus:ring-2 focus:ring-blue-500 outline-none">
+        <div id="name-input-container" class="hidden">
+          <label class="block font-semibold text-slate-300 mb-1" id="name-input-label" for="login-custom-name">Enter Student Name</label>
+          <input type="text" id="login-custom-name" placeholder="" class="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 focus:ring-2 focus:ring-blue-500 outline-none">
         </div>
 
-        <div>
+        <div id="password-field-container">
           <label class="block font-semibold text-slate-300 mb-1" for="login-password">Security Password</label>
-          <input type="password" id="login-password" required value="••••••••" class="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 focus:ring-2 focus:ring-blue-500 outline-none">
-        </div>
-
-        <div class="flex items-center justify-between text-[11px] text-slate-400">
-          <label class="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" checked class="rounded border-slate-800 bg-slate-950 text-blue-600 focus:ring-0">
-            <span>Remember session</span>
-          </label>
-          <button type="button" id="btn-demo-credentials" class="text-blue-400 hover:underline">Auto-fill Demo Credentials</button>
+          <input type="password" id="login-password" placeholder="Enter administrator password" class="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 focus:ring-2 focus:ring-blue-500 outline-none">
         </div>
 
         <button type="submit" class="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-xl shadow-lg shadow-blue-500/20 transition flex items-center justify-center gap-2 text-xs">
-          <span>🔓</span> Sign In to Portal
+          <span>🔓</span> Switch Account & Sign In
         </button>
       </form>
 
       <div class="border-t border-slate-800/80 pt-3 text-center text-[11px] text-slate-500">
-        Karnataka Institute of Tech & Science (KITS) • NAAC / NIRF Data Security
+        Karnataka Institute of Technology & Science • Role-Based Portal
       </div>
     </div>
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc, collection, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-    // Reference Institution (Surathkal Campus)
-    const INST = {
-      name: "KITS Surathkal",
+  <!-- APPLICATION CORE LOGIC SCRIPT -->
+  <script>
+    // --- REFERENCE CAMPUS COORDINATES ---
+    const CAMPUS = {
+      name: "Karnataka Institute of Tech & Science (KITS)",
       city: "Surathkal",
       district: "Dakshina Kannada",
       state: "Karnataka",
@@ -550,656 +568,472 @@
       lng: 74.7943
     };
 
-    const LOCAL_STORAGE_KEY = 'v02_locality_students_karnataka_v2';
-    const CUSTOM_CONFIG_KEY = 'v02_custom_firebase_config';
-
-    // Known city coordinates database for Leaflet Map & Distance calculation
-    const CITY_COORDS = {
-      "surathkal": { lat: 13.0108, lng: 74.7943 },
-      "mangaluru": { lat: 12.9141, lng: 74.8560 },
-      "mangalore": { lat: 12.9141, lng: 74.8560 },
-      "bantwal": { lat: 12.8943, lng: 75.0352 },
-      "puttur": { lat: 12.7686, lng: 75.2027 },
-      "moodabidri": { lat: 13.0694, lng: 74.9961 },
-      "belthangady": { lat: 13.0031, lng: 75.2974 },
-      "sullia": { lat: 12.5573, lng: 75.3900 },
-      "udupi": { lat: 13.3409, lng: 74.7421 },
-      "bengaluru": { lat: 12.9716, lng: 77.5946 },
-      "bangalore": { lat: 12.9716, lng: 77.5946 },
-      "mysuru": { lat: 12.2958, lng: 76.6394 },
-      "hubballi": { lat: 15.3647, lng: 75.1240 },
-      "shivamogga": { lat: 13.9299, lng: 75.5681 },
-      "belagavi": { lat: 15.8497, lng: 74.4977 },
-      "kalaburagi": { lat: 17.3297, lng: 76.8343 },
-      "davanagere": { lat: 14.4644, lng: 75.9218 },
-      "mumbai": { lat: 19.0760, lng: 72.8777 },
-      "kochi": { lat: 9.9312, lng: 76.2673 },
-      "chennai": { lat: 13.0827, lng: 80.2707 },
-      "hyderabad": { lat: 17.3850, lng: 78.4867 },
-      "jaipur": { lat: 26.9124, lng: 75.7873 },
-      "delhi": { lat: 28.7041, lng: 77.1025 },
-      "dubai": { lat: 25.2048, lng: 55.2708 },
-      "london": { lat: 51.5074, lng: -0.1278 },
-      "tokyo": { lat: 35.6762, lng: 139.6503 },
-      "new york": { lat: 40.7128, lng: -74.0060 }
-    };
-
-    const DEFAULT_STUDENTS = [
-      { id: "STU1001", name: "Chinmay Gowda", program: "B.Tech CSE", city: "Surathkal", district: "Dakshina Kannada", state: "Karnataka", country: "India" },
-      { id: "STU1002", name: "Ananya Bhat", program: "B.Tech ECE", city: "Surathkal", district: "Dakshina Kannada", state: "Karnataka", country: "India" },
-      { id: "STU1003", name: "Rohan Shetty", program: "B.Tech ME", city: "Surathkal", district: "Dakshina Kannada", state: "Karnataka", country: "India" },
-      { id: "STU1004", name: "Aditi Rao", program: "M.Tech AI", city: "Surathkal", district: "Dakshina Kannada", state: "Karnataka", country: "India" },
-      { id: "STU1005", name: "Samarth Poojary", program: "B.Tech EEE", city: "Surathkal", district: "Dakshina Kannada", state: "Karnataka", country: "India" },
-
-      { id: "STU1007", name: "Aditya Rai", program: "B.Tech CSE", city: "Mangaluru", district: "Dakshina Kannada", state: "Karnataka", country: "India" },
-      { id: "STU1008", name: "Pranav Shenoy", program: "B.Tech CE", city: "Bantwal", district: "Dakshina Kannada", state: "Karnataka", country: "India" },
-      { id: "STU1009", name: "Sanjana Mallya", program: "MCA", city: "Puttur", district: "Dakshina Kannada", state: "Karnataka", country: "India" },
-      { id: "STU1010", name: "Kaushik Prabhu", program: "B.Tech ECE", city: "Moodabidri", district: "Dakshina Kannada", state: "Karnataka", country: "India" },
-      { id: "STU1011", name: "Tanvi Nayak", program: "B.Tech ME", city: "Belthangady", district: "Dakshina Kannada", state: "Karnataka", country: "India" },
-
-      { id: "STU1013", name: "Karthik V", program: "B.Tech CSE", city: "Bengaluru", district: "Bengaluru Urban", state: "Karnataka", country: "India" },
-      { id: "STU1014", name: "Sneha Murthy", program: "B.Tech EEE", city: "Mysuru", district: "Mysuru", state: "Karnataka", country: "India" },
-      { id: "STU1015", name: "Varun Pai", program: "B.Tech ME", city: "Udupi", district: "Udupi", state: "Karnataka", country: "India" },
-      { id: "STU1016", name: "Preethi Kulkarni", program: "B.Arch", city: "Hubballi", district: "Dharwad", state: "Karnataka", country: "India" },
-      { id: "STU1017", name: "Nithin Kumar", program: "M.Tech ECE", city: "Shivamogga", district: "Shivamogga", state: "Karnataka", country: "India" },
-      { id: "STU1018", name: "Spoorthi Patil", program: "B.Tech CSE", city: "Belagavi", district: "Belagavi", state: "Karnataka", country: "India" },
-
-      { id: "STU1021", name: "Aarav Sharma", program: "B.Tech CSE", city: "Mumbai", district: "Mumbai City", state: "Maharashtra", country: "India" },
-      { id: "STU1022", name: "Diya Menon", program: "B.Tech ECE", city: "Kochi", district: "Ernakulam", state: "Kerala", country: "India" },
-      { id: "STU1023", name: "Rahul Thomas", program: "B.Tech ME", city: "Chennai", district: "Chennai", state: "Tamil Nadu", country: "India" },
-      { id: "STU1024", name: "Priya Reddy", program: "MCA", city: "Hyderabad", district: "Hyderabad", state: "Telangana", country: "India" },
-      { id: "STU1025", name: "Vikram Malhotra", program: "B.Tech CSE", city: "Jaipur", district: "Jaipur", state: "Rajasthan", country: "India" },
-      { id: "STU1026", name: "Shreya Gupta", program: "B.Arch", city: "Delhi", district: "New Delhi", state: "Delhi", country: "India" },
-
-      { id: "STU1027", name: "Tariq Al-Mansoor", program: "M.Tech AI", city: "Dubai", district: "Dubai", state: "Dubai", country: "UAE" },
-      { id: "STU1028", name: "John Smith", program: "B.Tech CSE", city: "London", district: "Greater London", state: "England", country: "United Kingdom" },
-      { id: "STU1029", name: "Kenji Sato", program: "B.Tech ECE", city: "Tokyo", district: "Kanto", state: "Tokyo", country: "Japan" },
-      { id: "STU1030", name: "Emily Watson", program: "B.Arch", city: "New York", district: "New York", state: "NY", country: "United States" }
+    // --- SEED / INITIAL STUDENTS ---
+    const INITIAL_STUDENTS = [
+      { id: "KITS-2026-001", name: "Aarav Shetty", program: "B.Tech CSE", city: "Surathkal", district: "Dakshina Kannada", state: "Karnataka", country: "India", lat: 13.0125, lng: 74.7920 },
+      { id: "KITS-2026-002", name: "Ananya Rao", program: "B.Tech ECE", city: "Mangaluru", district: "Dakshina Kannada", state: "Karnataka", country: "India", lat: 12.9141, lng: 74.8560 },
+      { id: "KITS-2026-003", name: "Mohammed Zayd", program: "B.Tech AI & DS", city: "Udupi", district: "Udupi", state: "Karnataka", country: "India", lat: 13.3409, lng: 74.7421 },
+      { id: "KITS-2026-004", name: "Sneha Kamath", program: "B.Tech Mechanical", city: "Kundapura", district: "Udupi", state: "Karnataka", country: "India", lat: 13.6288, lng: 74.6932 },
+      { id: "KITS-2026-005", name: "Rohan D'Souza", program: "B.Tech Civil", city: "Mulki", district: "Dakshina Kannada", state: "Karnataka", country: "India", lat: 13.0905, lng: 74.7981 },
+      { id: "KITS-2026-006", name: "Pooja Hegde", program: "B.Tech CSE", city: "Bengaluru", district: "Bengaluru Urban", state: "Karnataka", country: "India", lat: 12.9716, lng: 77.5946 },
+      { id: "KITS-2026-007", name: "Kiran Kumar", program: "B.Tech EEE", city: "Mysuru", district: "Mysuru", state: "Karnataka", country: "India", lat: 12.2958, lng: 76.6394 },
+      { id: "KITS-2026-008", name: "Divya Nambiar", program: "B.Tech CSE", city: "Kochi", district: "Ernakulam", state: "Kerala", country: "India", lat: 9.9312, lng: 76.2673 },
+      { id: "KITS-2026-009", name: "Aditya Menon", program: "B.Tech AI & DS", city: "Thiruvananthapuram", district: "Thiruvananthapuram", state: "Kerala", country: "India", lat: 8.5241, lng: 76.9366 },
+      { id: "KITS-2026-010", name: "Tanvi Sharma", program: "B.Tech CSE", city: "Mumbai", district: "Mumbai Suburban", state: "Maharashtra", country: "India", lat: 19.0760, lng: 72.8777 },
+      { id: "KITS-2026-011", name: "Rahul Verma", program: "B.Tech ECE", city: "Pune", district: "Pune", state: "Maharashtra", country: "India", lat: 18.5204, lng: 73.8567 },
+      { id: "KITS-2026-012", name: "Akash Patel", program: "B.Tech Mechanical", city: "Ahmedabad", district: "Ahmedabad", state: "Gujarat", country: "India", lat: 23.0225, lng: 72.5714 },
+      { id: "KITS-2026-013", name: "Neha Gupta", program: "B.Tech CSE", city: "New Delhi", district: "New Delhi", state: "Delhi", country: "India", lat: 28.6139, lng: 77.2090 },
+      { id: "KITS-2026-014", name: "Abhishek Roy", program: "B.Tech AI & DS", city: "Kolkata", district: "Kolkata", state: "West Bengal", country: "India", lat: 22.5726, lng: 88.3639 },
+      { id: "KITS-2026-015", name: "Siddharth Reddy", program: "B.Tech CSE", city: "Hyderabad", district: "Hyderabad", state: "Telangana", country: "India", lat: 17.3850, lng: 78.4867 },
+      { id: "KITS-2026-016", name: "Sai Kumar", program: "B.Tech EEE", city: "Chennai", district: "Chennai", state: "Tamil Nadu", country: "India", lat: 13.0827, lng: 80.2707 },
+      { id: "KITS-2026-017", name: "Meera Nair", program: "B.Tech Civil", city: "Coimbatore", district: "Coimbatore", state: "Tamil Nadu", country: "India", lat: 11.0168, lng: 76.9558 },
+      { id: "KITS-2026-018", name: "Tenzin Norbu", program: "B.Tech CSE", city: "Gangtok", district: "East Sikkim", state: "Sikkim", country: "India", lat: 27.3389, lng: 88.6065 },
+      { id: "KITS-2026-019", name: "Rina Chakma", program: "B.Tech ECE", city: "Guwahati", district: "Kamrup Metropolitan", state: "Assam", country: "India", lat: 26.1445, lng: 91.7362 },
+      { id: "KITS-2026-020", name: "Liam Smith", program: "B.Tech CSE", city: "London", district: "Greater London", state: "England", country: "United Kingdom", lat: 51.5074, lng: -0.1278 },
+      { id: "KITS-2026-021", name: "Aisha Al-Mansoor", program: "B.Tech AI & DS", city: "Dubai", district: "Dubai", state: "Dubai", country: "United Arab Emirates", lat: 25.2048, lng: 55.2708 },
+      { id: "KITS-2026-022", name: "Harshith Rao", program: "B.Tech CSE", city: "Mangaluru", district: "Dakshina Kannada", state: "Karnataka", country: "India", lat: 12.9250, lng: 74.8400 },
+      { id: "KITS-2026-023", name: "Shreya Pai", program: "B.Tech ECE", city: "Surathkal", district: "Dakshina Kannada", state: "Karnataka", country: "India", lat: 13.0090, lng: 74.7980 },
+      { id: "KITS-2026-024", name: "Varun Suvarna", program: "B.Tech Mechanical", city: "Surathkal", district: "Dakshina Kannada", state: "Karnataka", country: "India", lat: 13.0150, lng: 74.7900 },
+      { id: "KITS-2026-025", name: "Nischitha Bhat", program: "B.Tech CSE", city: "Bantwal", district: "Dakshina Kannada", state: "Karnataka", country: "India", lat: 12.8756, lng: 75.0384 },
+      { id: "KITS-2026-026", name: "Pradeep Nayak", program: "B.Tech Civil", city: "Puttur", district: "Dakshina Kannada", state: "Karnataka", country: "India", lat: 12.7623, lng: 75.2013 },
+      { id: "KITS-2026-027", name: "Sumanth M.", program: "B.Tech EEE", city: "Hubballi", district: "Dharwad", state: "Karnataka", country: "India", lat: 15.3647, lng: 75.1240 },
+      { id: "KITS-2026-028", name: "Kavya S.", program: "B.Tech CSE", city: "Belagavi", district: "Belagavi", state: "Karnataka", country: "India", lat: 15.8497, lng: 74.4977 },
+      { id: "KITS-2026-029", name: "Vikramaditya", program: "B.Tech AI & DS", city: "Jaipur", district: "Jaipur", state: "Rajasthan", country: "India", lat: 26.9124, lng: 75.7873 },
+      { id: "KITS-2026-030", name: "Kenji Sato", program: "B.Tech CSE", city: "Tokyo", district: "Tokyo Metropolis", state: "Tokyo", country: "Japan", lat: 35.6762, lng: 139.6503 }
     ];
 
+    // --- APPLICATION STATE ---
     let students = [];
-    let db = null;
-    let auth = null;
-    let user = null;
-    let isCloudSyncActive = false;
+    let currentUser = {
+      name: "Thejes",
+      email: "thejes@kits.edu.in",
+      role: "admin"
+    };
     let leafletMap = null;
-    let mapMarkersGroup = null;
+    let markersLayer = null;
     let donutChartInstance = null;
     let barChartInstance = null;
 
-    // User Authentication State
-    let currentUser = {
-      name: "Dr. Ramesh Rao",
-      email: "admin@kits.edu.in",
-      role: "admin" // 'admin' | 'faculty' | 'guest'
-    };
-
-    const appId = typeof window.appId !== 'undefined' ? window.appId : 'v02-student-locality-app';
-
-    function calculateDistanceKm(lat1, lon1, lat2, lon2) {
-      if (lat1 === lat2 && lon1 === lon2) return 0;
-      const R = 6371; // Earth's radius in km
+    // --- UTILITIES: DISTANCE & CLASSIFICATION ---
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+      const R = 6371; // Earth radius in km
       const dLat = (lat2 - lat1) * Math.PI / 180;
       const dLon = (lon2 - lon1) * Math.PI / 180;
-      const a = 
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-        Math.sin(dLon / 2) * Math.sin(dLon / 2);
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      return Math.round(R * c);
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return R * c;
     }
 
-    function loginUser(role, email, name) {
-      currentUser = {
-        name: name || (role === 'admin' ? 'Dr. Ramesh Rao (Admin)' : role === 'faculty' ? 'Prof. Sunita Bhat' : 'Auditor / Guest'),
-        email: email || `${role}@kits.edu.in`,
-        role: role
-      };
-      
-      try { localStorage.setItem('v02_user_session', JSON.stringify(currentUser)); } catch(e){}
-      updateAuthUI();
-      applyRolePermissions();
-      showToast(`Logged in as ${currentUser.name} (${role.toUpperCase()})`);
-      closeLoginModal();
-    }
-
-    function updateAuthUI() {
-      const nameEl = document.getElementById('user-display-name');
-      const roleEl = document.getElementById('user-role-badge');
-      const btnTextEl = document.getElementById('login-btn-text');
-
-      if (nameEl) nameEl.innerText = currentUser.name;
-      if (roleEl) {
-        roleEl.innerText = currentUser.role.toUpperCase();
-        if (currentUser.role === 'admin') {
-          roleEl.className = "px-1.5 py-0.5 text-[9px] rounded uppercase font-extrabold bg-blue-500/20 text-blue-400 border border-blue-500/30";
-        } else if (currentUser.role === 'faculty') {
-          roleEl.className = "px-1.5 py-0.5 text-[9px] rounded uppercase font-extrabold bg-amber-500/20 text-amber-400 border border-amber-500/30";
-        } else {
-          roleEl.className = "px-1.5 py-0.5 text-[9px] rounded uppercase font-extrabold bg-slate-800 text-slate-400 border border-slate-700";
-        }
+    function classifyLocality(student) {
+      if (student.country && student.country.toLowerCase() !== 'india') {
+        return 'International';
       }
-      if (btnTextEl) btnTextEl.innerText = currentUser.role === 'guest' ? 'Sign In' : 'Switch Account';
-    }
-
-    function applyRolePermissions() {
-      const isGuest = currentUser.role === 'guest';
-      const isFaculty = currentUser.role === 'faculty';
-
-      // Restrict modification actions for Auditor/Guest mode
-      const submitBtn = document.getElementById('form-submit-btn');
-      const gen10Btn = document.getElementById('btn-gen-10');
-      const gen25Btn = document.getElementById('btn-gen-25');
-      const resetBtn = document.getElementById('btn-prompt-reset');
-      const syncBtn = document.getElementById('btn-sync-settings');
-
-      if (submitBtn) {
-        submitBtn.disabled = isGuest;
-        submitBtn.className = isGuest
-          ? "w-full py-2.5 bg-slate-800 text-slate-500 font-semibold rounded-lg cursor-not-allowed"
-          : "w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg shadow-sm transition";
+      if (student.state && student.state.toLowerCase() !== 'karnataka') {
+        return 'Other State';
       }
-
-      if (gen10Btn) gen10Btn.disabled = isGuest;
-      if (gen25Btn) gen25Btn.disabled = isGuest;
-      if (resetBtn) resetBtn.style.display = isGuest ? 'none' : 'flex';
-      if (syncBtn) syncBtn.style.display = (isGuest || isFaculty) ? 'none' : 'flex';
+      if (student.city && student.city.toLowerCase() === 'surathkal') {
+        return 'Local';
+      }
+      if (student.district && student.district.toLowerCase() === 'dakshina kannada') {
+        return 'District';
+      }
+      return 'Within State';
     }
 
-    function openLoginModal() {
-      document.getElementById('login-modal')?.classList.remove('hidden');
+    function getBadgeClass(category) {
+      switch(category) {
+        case 'Local': return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30';
+        case 'District': return 'bg-sky-500/10 text-sky-400 border-sky-500/30';
+        case 'Within State': return 'bg-amber-500/10 text-amber-400 border-amber-500/30';
+        case 'Other State': return 'bg-orange-500/10 text-orange-400 border-orange-500/30';
+        case 'International': return 'bg-pink-500/10 text-pink-400 border-pink-500/30';
+        default: return 'bg-slate-700 text-slate-300 border-slate-600';
+      }
     }
 
-    function closeLoginModal() {
-      document.getElementById('login-modal')?.classList.add('hidden');
+    function getMarkerColor(category) {
+      switch(category) {
+        case 'Local': return '#10b981';
+        case 'District': return '#0ea5e9';
+        case 'Within State': return '#f59e0b';
+        case 'Other State': return '#f97316';
+        case 'International': return '#ec4899';
+        default: return '#64748b';
+      }
     }
 
-    function loadSavedSession() {
-      try {
-        const saved = localStorage.getItem('v02_user_session');
-        if (saved) currentUser = JSON.parse(saved);
-      } catch(e) {}
-      updateAuthUI();
-      applyRolePermissions();
-    }
-
-    function getStudentCoords(student) {
-      const cityKey = (student.city || '').trim().toLowerCase();
-      if (CITY_COORDS[cityKey]) return CITY_COORDS[cityKey];
-      
-      // Fallback coordinate generation for demo visualization based on category
-      const cat = getLocalityCategory(student);
-      if (cat === "Local") return { lat: 13.0108 + (Math.random() - 0.5) * 0.04, lng: 74.7943 + (Math.random() - 0.5) * 0.04 };
-      if (cat === "District") return { lat: 12.9141 + (Math.random() - 0.5) * 0.3, lng: 74.8560 + (Math.random() - 0.5) * 0.3 };
-      if (cat === "Within State") return { lat: 13.5 + (Math.random() - 0.5) * 3, lng: 75.5 + (Math.random() - 0.5) * 3 };
-      if (cat === "Other State") return { lat: 19.0 + (Math.random() - 0.5) * 10, lng: 77.0 + (Math.random() - 0.5) * 10 };
-      return { lat: 25.0 + (Math.random() - 0.5) * 20, lng: 55.0 + (Math.random() - 0.5) * 40 };
-    }
-
-    function getLocalityCategory(student) {
-      const c = (student.country || '').trim().toLowerCase();
-      const s = (student.state || '').trim().toLowerCase();
-      const d = (student.district || '').trim().toLowerCase();
-      const ci = (student.city || '').trim().toLowerCase();
-
-      if (c !== INST.country.toLowerCase()) return "International";
-      if (s !== INST.state.toLowerCase()) return "Other State";
-      if (d !== INST.district.toLowerCase()) return "Within State";
-      if (ci !== INST.city.toLowerCase()) return "District";
-      return "Local";
-    }
-
-    function escapeHtml(str) {
-      if (!str) return '';
-      return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-    }
-
-    function showToast(message, type = 'info') {
+    function showToast(message, type = 'success') {
       const container = document.getElementById('toast-container');
-      if (!container) return;
       const toast = document.createElement('div');
-      const bg = type === 'error' ? 'bg-rose-600' : 'bg-slate-800';
-      toast.className = `${bg} text-white text-xs px-4 py-2.5 rounded-xl shadow-xl transition-all transform translate-y-2 opacity-0 pointer-events-auto flex items-center gap-2 border border-slate-700`;
-      toast.innerHTML = `<span>${type === 'error' ? '⚠️' : '✅'}</span> <span>${escapeHtml(message)}</span>`;
+      const bg = type === 'success' ? 'bg-emerald-600 text-white' : type === 'error' ? 'bg-rose-600 text-white' : 'bg-slate-800 text-slate-100 border border-slate-700';
+      toast.className = `${bg} px-4 py-2.5 rounded-xl text-xs font-semibold shadow-xl transition transform translate-y-2 opacity-0 flex items-center gap-2`;
+      toast.innerHTML = `<span>${type === 'success' ? '✅' : type === 'error' ? '⚠️' : 'ℹ️'}</span> ${message}`;
       container.appendChild(toast);
-
-      setTimeout(() => { toast.classList.remove('translate-y-2', 'opacity-0'); }, 10);
+      
       setTimeout(() => {
-        toast.classList.add('opacity-0', 'translate-y-2');
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      }, 10);
+
+      setTimeout(() => {
+        toast.classList.add('translate-y-2', 'opacity-0');
         setTimeout(() => toast.remove(), 300);
-      }, 3000);
+      }, 3500);
     }
 
-    async function initCloudStorage() {
-      try {
-        let config = null;
-        const savedCustomConfig = localStorage.getItem(CUSTOM_CONFIG_KEY);
-        if (savedCustomConfig) {
-          try { config = JSON.parse(savedCustomConfig); } catch(e){}
+    // --- PERSISTENCE & STORAGE ---
+    function initApp() {
+      // Load stored students or default seed
+      const saved = localStorage.getItem('kits_students_v02');
+      if (saved) {
+        try {
+          students = JSON.parse(saved);
+        } catch(e) {
+          students = [...INITIAL_STUDENTS];
         }
-
-        if (!config && typeof __firebase_config !== 'undefined') {
-          config = JSON.parse(__firebase_config);
-        }
-
-        if (config) {
-          const app = initializeApp(config);
-          auth = getAuth(app);
-          db = getFirestore(app);
-
-          if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-            user = (await signInWithCustomToken(auth, __initial_auth_token).catch(() => signInAnonymously(auth))).user;
-          } else {
-            user = (await signInAnonymously(auth)).user;
-          }
-
-          if (user) {
-            isCloudSyncActive = true;
-            setupRealtimeSync();
-            return;
-          }
-        }
-      } catch (err) {
-        console.warn("Storage fallback to LocalStorage:", err);
+      } else {
+        students = [...INITIAL_STUDENTS];
+        localStorage.setItem('kits_students_v02', JSON.stringify(students));
       }
 
-      fallbackToLocalStorage();
+      // Load stored authentication
+      const savedUser = localStorage.getItem('kits_auth_v02');
+      if (savedUser) {
+        try {
+          currentUser = JSON.parse(savedUser);
+        } catch(e) {}
+      } else {
+        localStorage.setItem('kits_auth_v02', JSON.stringify(currentUser));
+      }
+
+      updateUserUI();
+      setupTabs();
+      setupEventListeners();
+      renderAll();
+      initMap();
     }
 
-    function setupRealtimeSync() {
-      if (!db || !user) return;
-      const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'students');
+    function saveStudents() {
+      localStorage.setItem('kits_students_v02', JSON.stringify(students));
+      renderAll();
+      if (leafletMap) updateMapMarkers();
+    }
+
+    function updateUserUI() {
+      document.getElementById('user-display-name').textContent = currentUser.name;
+      const roleBadge = document.getElementById('user-role-badge');
+      roleBadge.textContent = currentUser.role.toUpperCase();
       
-      onSnapshot(colRef, (snapshot) => {
-        if (snapshot.empty) {
-          saveAllToCloud(DEFAULT_STUDENTS);
-        } else {
-          const cloudData = [];
-          snapshot.forEach(doc => cloudData.push(doc.data()));
-          students = cloudData;
-          updateStorageStatus(true, `☁️ Live Sync Active`);
-          renderApp();
-        }
-      }, (error) => {
-        console.error("Firestore sync error:", error);
-        fallbackToLocalStorage();
+      if (currentUser.role === 'admin') {
+        roleBadge.className = 'px-1.5 py-0.5 text-[9px] rounded uppercase font-extrabold bg-blue-500/20 text-blue-400 border border-blue-500/30';
+      } else {
+        roleBadge.className = 'px-1.5 py-0.5 text-[9px] rounded uppercase font-extrabold bg-amber-500/20 text-amber-400 border border-amber-500/30';
+      }
+
+      document.getElementById('login-btn-text').textContent = 'Switch Account';
+      renderStudentTable();
+    }
+
+    // --- TABS MANAGEMENT ---
+    function setupTabs() {
+      const tabs = document.querySelectorAll('.nav-tab');
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          const targetID = tab.getAttribute('data-tab');
+          
+          document.querySelectorAll('.nav-tab').forEach(t => {
+            t.classList.remove('border-blue-500', 'text-blue-400');
+            t.classList.add('border-transparent', 'text-slate-400');
+          });
+          tab.classList.remove('border-transparent', 'text-slate-400');
+          tab.classList.add('border-blue-500', 'text-blue-400');
+
+          document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+          document.getElementById(targetID).classList.remove('hidden');
+
+          if (targetID === 'tab-map' && leafletMap) {
+            setTimeout(() => leafletMap.invalidateSize(), 200);
+          }
+        });
       });
     }
 
-    function fallbackToLocalStorage() {
-      isCloudSyncActive = false;
-      students = loadLocalStudents();
-      updateStorageStatus(false, `📱 Local Storage Mode`);
-      renderApp();
+    // --- RENDER ALL UI COMPONENTS ---
+    function renderAll() {
+      renderMetrics();
+      renderCharts();
+      renderDistanceBands();
+      renderStudentTable();
+      renderNAACReport();
     }
 
-    function updateStorageStatus(isCloud, text) {
-      const textEl = document.getElementById('storage-status-text');
-      const pingEl = document.getElementById('storage-ping');
-      if (textEl) textEl.innerText = text;
-      if (pingEl) {
-        pingEl.className = isCloud 
-          ? "h-2 w-2 rounded-full bg-emerald-400 animate-pulse" 
-          : "h-2 w-2 rounded-full bg-amber-400";
-      }
+    function renderMetrics() {
+      const total = students.length;
+      document.getElementById('total-student-badge').textContent = `Total Students: ${total}`;
+
+      let counts = { Local: 0, District: 0, 'Within State': 0, 'Other State': 0, International: 0 };
+      
+      students.forEach(s => {
+        const cat = classifyLocality(s);
+        if (counts[cat] !== undefined) counts[cat]++;
+      });
+
+      ['local', 'district', 'state', 'otherstate', 'intl'].forEach((key, idx) => {
+        const catName = Object.keys(counts)[idx];
+        const count = counts[catName];
+        const pct = total > 0 ? ((count / total) * 100).toFixed(1) : 0;
+        
+        document.getElementById(`count-${key}`).textContent = count;
+        document.getElementById(`pct-${key}`).textContent = `${pct}%`;
+      });
+
+      const outStateCount = counts['Other State'] + counts['International'];
+      const outStatePct = total > 0 ? ((outStateCount / total) * 100).toFixed(1) : 0;
+      const intlPct = total > 0 ? ((counts['International'] / total) * 100).toFixed(1) : 0;
+
+      document.getElementById('stat-out-state-pct').textContent = `${outStatePct}%`;
+      document.getElementById('stat-intl-pct').textContent = `${intlPct}%`;
     }
 
-    function loadLocalStudents() {
-      try {
-        const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    function renderDistanceBands() {
+      let r25 = 0, r150 = 0, r800 = 0, rFar = 0;
+
+      students.forEach(s => {
+        const dist = calculateDistance(CAMPUS.lat, CAMPUS.lng, s.lat, s.lng);
+        if (dist <= 25) r25++;
+        else if (dist <= 150) r150++;
+        else if (dist <= 800) r800++;
+        else rFar++;
+      });
+
+      document.getElementById('radius-25').textContent = r25;
+      document.getElementById('radius-150').textContent = r150;
+      document.getElementById('radius-800').textContent = r800;
+      document.getElementById('radius-far').textContent = rFar;
+    }
+
+    function renderCharts() {
+      let counts = { Local: 0, District: 0, 'Within State': 0, 'Other State': 0, International: 0 };
+      let stateCounts = {};
+
+      students.forEach(s => {
+        const cat = classifyLocality(s);
+        if (counts[cat] !== undefined) counts[cat]++;
+
+        const st = s.state || 'Unknown';
+        stateCounts[st] = (stateCounts[st] || 0) + 1;
+      });
+
+      // Donut Chart
+      const donutCtx = document.getElementById('chart-locality-donut').getContext('2d');
+      if (donutChartInstance) donutChartInstance.destroy();
+
+      donutChartInstance = new Chart(donutCtx, {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(counts),
+          datasets: [{
+            data: Object.values(counts),
+            backgroundColor: ['#10b981', '#0ea5e9', '#f59e0b', '#f97316', '#ec4899'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { color: '#cbd5e1', boxWidth: 12, font: { size: 11 } }
+            }
+          }
         }
-      } catch (e) {}
-      return JSON.parse(JSON.stringify(DEFAULT_STUDENTS));
+      });
+
+      // Bar Chart: Top States
+      const sortedStates = Object.entries(stateCounts).sort((a,b) => b[1] - a[1]).slice(0, 6);
+      const barCtx = document.getElementById('chart-states-bar').getContext('2d');
+      if (barChartInstance) barChartInstance.destroy();
+
+      barChartInstance = new Chart(barCtx, {
+        type: 'bar',
+        data: {
+          labels: sortedStates.map(x => x[0]),
+          datasets: [{
+            label: 'Student Count',
+            data: sortedStates.map(x => x[1]),
+            backgroundColor: '#3b82f6',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { display: false } },
+            y: { ticks: { color: '#94a3b8', precision: 0 }, grid: { color: '#334155' } }
+          }
+        }
+      });
     }
 
-    async function persistStudents(updatedList) {
-      students = updatedList;
-      try { localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(students)); } catch(e) {}
+    function renderStudentTable() {
+      const tbody = document.getElementById('student-table-body');
+      const search = document.getElementById('search-input').value.toLowerCase();
+      const filterCat = document.getElementById('filter-category').value;
+      const isAdmin = currentUser.role === 'admin';
 
-      if (isCloudSyncActive && db && user) {
-        try { await saveAllToCloud(students); } catch (e) {}
+      tbody.innerHTML = '';
+
+      const filtered = students.filter(s => {
+        const cat = classifyLocality(s);
+        const matchesSearch = s.name.toLowerCase().includes(search) || 
+                              s.id.toLowerCase().includes(search) || 
+                              s.city.toLowerCase().includes(search) || 
+                              s.district.toLowerCase().includes(search) ||
+                              s.state.toLowerCase().includes(search);
+        const matchesCat = filterCat === 'All' || cat === filterCat;
+        return matchesSearch && matchesCat;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400">No student records found matching filter criteria.</td></tr>`;
+        return;
       }
-      renderApp();
+
+      filtered.forEach(s => {
+        const cat = classifyLocality(s);
+        const dist = calculateDistance(CAMPUS.lat, CAMPUS.lng, s.lat, s.lng).toFixed(1);
+        const badgeCls = getBadgeClass(cat);
+
+        const row = document.createElement('tr');
+        row.className = 'hover:bg-slate-900/50 transition';
+        row.innerHTML = `
+          <td class="p-3">
+            <div class="font-bold text-white">${s.name}</div>
+            <div class="text-[10px] text-slate-400 font-mono">${s.id} • ${s.program}</div>
+          </td>
+          <td class="p-3">
+            <div class="text-slate-200">${s.city}, ${s.district}</div>
+            <div class="text-[10px] text-slate-400">${s.state}, ${s.country}</div>
+          </td>
+          <td class="p-3 font-mono text-slate-300">
+            ${dist} km
+          </td>
+          <td class="p-3">
+            <span class="px-2 py-0.5 text-[10px] font-bold rounded-full border ${badgeCls}">${cat}</span>
+          </td>
+          <td class="p-3 text-right space-x-2">
+            <button onclick="editStudent('${s.id}')" class="px-2.5 py-1 ${isAdmin ? 'bg-slate-700 hover:bg-slate-600 text-slate-200' : 'bg-slate-800 text-slate-500 cursor-not-allowed'} rounded text-[11px] font-semibold transition">Edit</button>
+            <button onclick="deleteStudent('${s.id}')" class="px-2.5 py-1 ${isAdmin ? 'bg-rose-900/40 hover:bg-rose-800 text-rose-300' : 'bg-slate-800 text-slate-600 cursor-not-allowed'} rounded text-[11px] font-semibold transition">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
     }
 
-    async function saveAllToCloud(dataList) {
-      if (!db || !user) return;
-      for (const item of dataList) {
-        const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'students', item.id);
-        await setDoc(docRef, item);
-      }
+    function renderNAACReport() {
+      const tbody = document.getElementById('naac-table-body');
+      tbody.innerHTML = '';
+      const total = students.length;
+
+      let counts = { Local: 0, District: 0, 'Within State': 0, 'Other State': 0, International: 0 };
+      students.forEach(s => {
+        const cat = classifyLocality(s);
+        if (counts[cat] !== undefined) counts[cat]++;
+      });
+
+      const metricsMap = {
+        'Local': 'NAAC 2.1.1 (Surathkal Local Radius)',
+        'District': 'NAAC 2.1.1 (Dakshina Kannada District)',
+        'Within State': 'NAAC 2.1.1 & NIRF State Share',
+        'Other State': 'NAAC 2.1.2 & NIRF Out-of-State ($P_{OS}$)',
+        'International': 'NIRF Out-of-Country ($P_{OC}$)'
+      };
+
+      Object.entries(counts).forEach(([cat, count]) => {
+        const pct = total > 0 ? ((count / total) * 100).toFixed(2) : 0;
+        const row = document.createElement('tr');
+        row.className = 'hover:bg-slate-900/50';
+        row.innerHTML = `
+          <td class="p-3 border-r border-slate-800 font-bold text-white">${cat}</td>
+          <td class="p-3 border-r border-slate-800 text-slate-400">Institutional Geo-Scope Tier</td>
+          <td class="p-3 border-r border-slate-800 text-center font-bold text-blue-400">${count}</td>
+          <td class="p-3 border-r border-slate-800 text-center text-emerald-400">${pct}%</td>
+          <td class="p-3 text-slate-300">${metricsMap[cat]}</td>
+        `;
+        tbody.appendChild(row);
+      });
     }
 
-    function initLeafletMap() {
+    // --- LEAFLET MAP INITIALIZATION ---
+    function initMap() {
       if (leafletMap) return;
-      
-      const mapContainer = document.getElementById('leaflet-map-container');
-      if (!mapContainer) return;
 
-      leafletMap = L.map('leaflet-map-container', {
-        center: [13.0108, 74.7943],
-        zoom: 6,
-        zoomControl: true
-      });
+      leafletMap = L.map('leaflet-map-container').setView([CAMPUS.lat, CAMPUS.lng], 9);
 
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; OpenStreetMap &copy; CARTO',
-        maxZoom: 18
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://carto.com/">CARTO</a> | KITS GIS Intelligence',
+        maxZoom: 19
       }).addTo(leafletMap);
 
-      // Add Reference Campus Marker
+      // Campus Marker
       const campusIcon = L.divIcon({
-        className: 'custom-campus-pin',
-        html: `<div style="background-color:#2563eb; color:white; font-weight:bold; font-size:10px; padding:4px 8px; border-radius:12px; border:2px solid white; box-shadow:0 4px 6px rgba(0,0,0,0.3);">🏫 KITS Surathkal</div>`,
-        iconSize: [110, 30],
-        iconAnchor: [55, 15]
+        className: 'custom-campus-marker',
+        html: `<div style="background:#2563eb; color:white; font-weight:800; padding:6px 10px; border-radius:8px; border:2px solid #ffffff; font-size:11px; white-space:nowrap; box-shadow:0 4px 12px rgba(37,99,235,0.4);">🏫 KITS Campus</div>`,
+        iconSize: [100, 36],
+        iconAnchor: [50, 18]
       });
 
-      L.marker([INST.lat, INST.lng], { icon: campusIcon })
-        .addTo(leafletMap)
-        .bindPopup(`<b>Karnataka Institute of Tech & Science (KITS)</b><br>Surathkal, Mangaluru, Karnataka<br><em>Reference Center Point</em>`);
+      L.marker([CAMPUS.lat, CAMPUS.lng], { icon: campusIcon }).addTo(leafletMap)
+        .bindPopup(`<b>${CAMPUS.name}</b><br>Reference Campus (Surathkal, Mangaluru)`);
 
-      mapMarkersGroup = L.layerGroup().addTo(leafletMap);
+      markersLayer = L.layerGroup().addTo(leafletMap);
       updateMapMarkers();
     }
 
     function updateMapMarkers() {
-      if (!leafletMap || !mapMarkersGroup) return;
-      mapMarkersGroup.clearLayers();
-
-      const colorMap = {
-        'Local': '#10b981',
-        'District': '#0284c7',
-        'Within State': '#f59e0b',
-        'Other State': '#ea580c',
-        'International': '#ec4899'
-      };
+      if (!markersLayer) return;
+      markersLayer.clearLayers();
 
       students.forEach(s => {
-        const coords = getStudentCoords(s);
-        const cat = getLocalityCategory(s);
-        const color = colorMap[cat] || '#64748b';
-        const dist = calculateDistanceKm(INST.lat, INST.lng, coords.lat, coords.lng);
+        const cat = classifyLocality(s);
+        const color = getMarkerColor(cat);
+        const dist = calculateDistance(CAMPUS.lat, CAMPUS.lng, s.lat, s.lng).toFixed(1);
 
-        const markerHtml = `<div style="background:${color}; width:12px; height:12px; border-radius:50%; border:2px solid white; box-shadow:0 2px 4px rgba(0,0,0,0.4);"></div>`;
-        const customIcon = L.divIcon({
-          className: 'student-pin',
-          html: markerHtml,
-          iconSize: [12, 12],
-          iconAnchor: [6, 6]
+        const circleIcon = L.divIcon({
+          className: 'custom-student-marker',
+          html: `<div style="background:${color}; width:14px; height:14px; border-radius:50%; border:2px solid #ffffff; box-shadow:0 2px 8px rgba(0,0,0,0.4);"></div>`,
+          iconSize: [14, 14],
+          iconAnchor: [7, 7]
         });
 
-        const popupContent = `
-          <div style="font-family:sans-serif; text-align:left; color:#0f172a;">
-            <div style="font-weight:bold; font-size:13px; color:#1e293b;">${escapeHtml(s.name)}</div>
-            <div style="font-size:11px; color:#64748b;">${escapeHtml(s.program)} • ${escapeHtml(s.id)}</div>
-            <div style="margin-top:4px; font-size:11px;">📍 ${escapeHtml(s.city)}, ${escapeHtml(s.state)}</div>
-            <div style="font-size:11px; font-weight:bold; color:${color}; margin-top:2px;">Tier: ${cat} (~${dist} km)</div>
+        const marker = L.marker([s.lat, s.lng], { icon: circleIcon });
+        marker.bindPopup(`
+          <div style="font-size:11px; line-height:1.4;">
+            <strong style="color:#ffffff; font-size:12px;">${s.name}</strong><br>
+            <span style="color:#94a3b8;">${s.id} • ${s.program}</span><br>
+            📍 ${s.city}, ${s.state} (${cat})<br>
+            📏 Distance to Campus: <b>${dist} km</b>
           </div>
-        `;
-
-        L.marker([coords.lat, coords.lng], { icon: customIcon })
-          .bindPopup(popupContent)
-          .addTo(mapMarkersGroup);
+        `);
+        markersLayer.addLayer(marker);
       });
     }
 
-    function updateCharts(counts) {
-      const donutCtx = document.getElementById('chart-locality-donut');
-      if (donutCtx) {
-        const labels = ['Local', 'District', 'Within State', 'Other State', 'International'];
-        const data = [counts.Local, counts.District, counts["Within State"], counts["Other State"], counts.International];
-
-        if (donutChartInstance) {
-          donutChartInstance.data.datasets[0].data = data;
-          donutChartInstance.update();
-        } else {
-          donutChartInstance = new Chart(donutCtx, {
-            type: 'doughnut',
-            data: {
-              labels: labels,
-              datasets: [{
-                data: data,
-                backgroundColor: ['#10b981', '#0284c7', '#f59e0b', '#ea580c', '#ec4899'],
-                borderWidth: 0
-              }]
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: {
-                legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 11 } } }
-              },
-              cutout: '65%'
-            }
-          });
-        }
-      }
-
-      const barCtx = document.getElementById('chart-states-bar');
-      if (barCtx) {
-        // Group by State
-        const stateCounts = {};
-        students.forEach(s => {
-          const st = s.state || 'Unknown';
-          stateCounts[st] = (stateCounts[st] || 0) + 1;
-        });
-
-        const sortedStates = Object.keys(stateCounts)
-          .sort((a,b) => stateCounts[b] - stateCounts[a])
-          .slice(0, 6);
-
-        const barData = sortedStates.map(st => stateCounts[st]);
-
-        if (barChartInstance) {
-          barChartInstance.data.labels = sortedStates;
-          barChartInstance.data.datasets[0].data = barData;
-          barChartInstance.update();
-        } else {
-          barChartInstance = new Chart(barCtx, {
-            type: 'bar',
-            data: {
-              labels: sortedStates,
-              datasets: [{
-                label: 'Students Count',
-                data: barData,
-                backgroundColor: '#3b82f6',
-                borderRadius: 6
-              }]
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: { legend: { display: false } },
-              scales: {
-                x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { display: false } },
-                y: { ticks: { color: '#94a3b8', precision: 0 }, grid: { color: '#334155' } }
-              }
-            }
-          });
-        }
-      }
-    }
-
-    function renderApp() {
-      const searchVal = (document.getElementById('search-input')?.value || '').toLowerCase().trim();
-      const filterCat = document.getElementById('filter-category')?.value || 'All';
-
-      let counts = { Local: 0, District: 0, "Within State": 0, "Other State": 0, International: 0 };
-      let distanceBands = { r25: 0, r150: 0, r800: 0, rFar: 0 };
-
-      students.forEach(s => {
-        const cat = getLocalityCategory(s);
-        if (counts[cat] !== undefined) counts[cat]++;
-
-        const coords = getStudentCoords(s);
-        const dist = calculateDistanceKm(INST.lat, INST.lng, coords.lat, coords.lng);
-        if (dist <= 25) distanceBands.r25++;
-        else if (dist <= 150) distanceBands.r150++;
-        else if (dist <= 800) distanceBands.r800++;
-        else distanceBands.rFar++;
-      });
-
-      const total = students.length || 1;
-      
-      document.getElementById('total-student-badge').innerText = `Total Students: ${students.length}`;
-      document.getElementById('count-local').innerText = counts.Local;
-      document.getElementById('pct-local').innerText = `${Math.round((counts.Local / total) * 100)}%`;
-
-      document.getElementById('count-district').innerText = counts.District;
-      document.getElementById('pct-district').innerText = `${Math.round((counts.District / total) * 100)}%`;
-
-      document.getElementById('count-state').innerText = counts["Within State"];
-      document.getElementById('pct-state').innerText = `${Math.round((counts["Within State"] / total) * 100)}%`;
-
-      document.getElementById('count-otherstate').innerText = counts["Other State"];
-      document.getElementById('pct-otherstate').innerText = `${Math.round((counts["Other State"] / total) * 100)}%`;
-
-      document.getElementById('count-intl').innerText = counts.International;
-      document.getElementById('pct-intl').innerText = `${Math.round((counts.International / total) * 100)}%`;
-
-      document.getElementById('radius-25').innerText = distanceBands.r25;
-      document.getElementById('radius-150').innerText = distanceBands.r150;
-      document.getElementById('radius-800').innerText = distanceBands.r800;
-      document.getElementById('radius-far').innerText = distanceBands.rFar;
-
-      document.getElementById('stat-out-state-pct').innerText = `${Math.round((counts["Other State"] / total) * 100)}%`;
-      document.getElementById('stat-intl-pct').innerText = `${Math.round((counts.International / total) * 100)}%`;
-
-      updateCharts(counts);
-      updateMapMarkers();
-      renderNAACReport(counts, total);
-
-      // Render Table
-      const tbody = document.getElementById('student-table-body');
-      if (!tbody) return;
-
-      const filtered = students.filter(s => {
-        const cat = getLocalityCategory(s);
-        const matchesCategory = filterCat === 'All' || cat === filterCat;
-        const matchesSearch = !searchVal || 
-          s.name.toLowerCase().includes(searchVal) ||
-          s.id.toLowerCase().includes(searchVal) ||
-          s.city.toLowerCase().includes(searchVal) ||
-          s.district.toLowerCase().includes(searchVal);
-        return matchesCategory && matchesSearch;
-      });
-
-      if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-500">No matching student records found.</td></tr>`;
+    // --- FORM & CRUD ACTIONS ---
+    window.editStudent = function(id) {
+      if (currentUser.role !== 'admin') {
+        showToast('Access Denied: Only authenticated administrators can modify student records.', 'error');
+        document.getElementById('login-modal').classList.remove('hidden');
         return;
       }
 
-      const categoryStyles = {
-        'Local': 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
-        'District': 'bg-sky-500/10 text-sky-400 border-sky-500/30',
-        'Within State': 'bg-amber-500/10 text-amber-400 border-amber-500/30',
-        'Other State': 'bg-orange-500/10 text-orange-400 border-orange-500/30',
-        'International': 'bg-pink-500/10 text-pink-400 border-pink-500/30'
-      };
-
-      tbody.innerHTML = filtered.map(s => {
-        const cat = getLocalityCategory(s);
-        const badgeStyle = categoryStyles[cat] || 'bg-slate-800 text-slate-300 border-slate-700';
-        const coords = getStudentCoords(s);
-        const dist = calculateDistanceKm(INST.lat, INST.lng, coords.lat, coords.lng);
-
-        return `
-          <tr class="hover:bg-slate-800/50 transition">
-            <td class="p-3">
-              <div class="font-semibold text-slate-100">${escapeHtml(s.name)}</div>
-              <div class="text-[11px] text-slate-400 font-mono">${escapeHtml(s.id)} • ${escapeHtml(s.program)}</div>
-            </td>
-            <td class="p-3 text-slate-300">
-              <div>${escapeHtml(s.city)}, ${escapeHtml(s.district)}</div>
-              <div class="text-[11px] text-slate-400">${escapeHtml(s.state)}, ${escapeHtml(s.country)}</div>
-            </td>
-            <td class="p-3 font-mono text-slate-300 text-[11px]">
-              ~${dist} km
-            </td>
-            <td class="p-3">
-              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${badgeStyle}">
-                ${cat}
-              </span>
-            </td>
-            <td class="p-3 text-right">
-              <div class="flex items-center justify-end gap-1.5">
-                <button onclick="editStudent('${s.id}')" class="px-2.5 py-1 bg-slate-700 hover:bg-slate-600 text-slate-200 text-[11px] font-medium rounded transition">
-                  Edit
-                </button>
-                <button onclick="deleteStudent('${s.id}')" class="px-2.5 py-1 bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 border border-rose-800/50 text-[11px] font-medium rounded transition">
-                  Delete
-                </button>
-              </div>
-            </td>
-          </tr>
-        `;
-      }).join('');
-    }
-
-    function renderNAACReport(counts, total) {
-      const tbody = document.getElementById('naac-table-body');
-      if (!tbody) return;
-
-      const rows = [
-        { tier: "Local", scope: "Surathkal Town & Immediate Vicinity", count: counts.Local, mapping: "Day Scholar Base Metric" },
-        { tier: "District", scope: "Dakshina Kannada District", count: counts.District, mapping: "Feeder District Inflow" },
-        { tier: "Within State", scope: "Karnataka State (Outside DK Dist)", count: counts["Within State"], mapping: "State Diversity Index" },
-        { tier: "Other State", scope: "Other Indian States & UTs", count: counts["Other State"], mapping: "NAAC Metric 2.1 / NIRF Outreach (POS)" },
-        { tier: "International", scope: "Outside India", count: counts.International, mapping: "NAAC Metric 2.1 / NIRF Outreach (POC)" }
-      ];
-
-      tbody.innerHTML = rows.map(r => {
-        const pct = Math.round((r.count / total) * 100);
-        return `
-          <tr class="hover:bg-slate-800/40">
-            <td class="p-3 border-r border-slate-800 font-bold text-blue-400">${r.tier}</td>
-            <td class="p-3 border-r border-slate-800 text-slate-300">${r.scope}</td>
-            <td class="p-3 border-r border-slate-800 text-center font-bold text-white">${r.count}</td>
-            <td class="p-3 border-r border-slate-800 text-center text-emerald-400 font-bold">${pct}%</td>
-            <td class="p-3 text-slate-400">${r.mapping}</td>
-          </tr>
-        `;
-      }).join('');
-    }
-
-    async function handleFormSubmit(e) {
-      e.preventDefault();
-
-      const editId = document.getElementById('edit-id').value.trim();
-      const name = document.getElementById('name').value.trim();
-      const program = document.getElementById('program').value.trim();
-      const city = document.getElementById('city').value.trim();
-      const district = document.getElementById('district').value.trim();
-      const state = document.getElementById('state').value.trim();
-      const country = document.getElementById('country').value.trim();
-
-      if (!name || !city || !district || !state || !country) {
-        showToast("Please fill in all required fields.", "error");
-        return;
-      }
-
-      if (editId) {
-        const idx = students.findIndex(s => s.id === editId);
-        if (idx !== -1) {
-          students[idx] = { id: editId, name, program, city, district, state, country };
-          showToast(`Updated record for ${name}`);
-        }
-      } else {
-        const newId = 'STU' + (Math.floor(1000 + Math.random() * 9000));
-        students.unshift({ id: newId, name, program, city, district, state, country });
-        showToast(`Created student ${name} (${newId})`);
-      }
-
-      cancelEdit();
-      await persistStudents(students);
-    }
-
-    function editStudent(id) {
-      const s = students.find(item => item.id === id);
+      const s = students.find(x => x.id === id);
       if (!s) return;
 
       document.getElementById('edit-id').value = s.id;
@@ -1210,272 +1044,306 @@
       document.getElementById('state').value = s.state;
       document.getElementById('country').value = s.country;
 
-      document.getElementById('form-title').innerText = `Edit Student (${s.id})`;
-      document.getElementById('form-mode-badge').innerText = "EDIT MODE";
-      document.getElementById('form-submit-btn').innerText = "Update & Recalculate";
+      document.getElementById('form-title').textContent = `Edit Student: ${s.id}`;
+      document.getElementById('form-mode-badge').textContent = 'EDIT';
+      document.getElementById('form-mode-badge').className = 'text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded font-mono';
+      document.getElementById('form-submit-btn').textContent = 'Update Student Record';
       document.getElementById('form-cancel-btn').classList.remove('hidden');
 
-      // Switch to registry tab
-      switchTab('tab-students');
-    }
+      // Switch to student tab if not active
+      document.querySelector('[data-tab="tab-students"]').click();
+    };
 
-    function cancelEdit() {
-      document.getElementById('student-form').reset();
-      document.getElementById('edit-id').value = '';
-      document.getElementById('program').value = 'B.Tech CSE';
-      document.getElementById('country').value = 'India';
-      document.getElementById('form-title').innerText = "Add New Student Record";
-      document.getElementById('form-mode-badge').innerText = "NEW";
-      document.getElementById('form-submit-btn').innerText = "Create & Auto-Classify Location";
-      document.getElementById('form-cancel-btn').classList.add('hidden');
-    }
-
-    async function deleteStudent(id) {
-      const s = students.find(item => item.id === id);
-      const name = s ? s.name : 'Student';
-
-      if (isCloudSyncActive && db && user) {
-        try {
-          const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'students', id);
-          await deleteDoc(docRef);
-        } catch (e) {}
-      }
-
-      const updated = students.filter(item => item.id !== id);
-      showToast(`Deleted ${name}`);
-      await persistStudents(updated);
-    }
-
-    window.editStudent = editStudent;
-    window.deleteStudent = deleteStudent;
-
-    function generateBatchStudents(count) {
-      const samplePool = [
-        { name: "Rithvik Shetty", program: "B.Tech CSE", city: "Surathkal", district: "Dakshina Kannada", state: "Karnataka", country: "India" },
-        { name: "Meera Hegde", program: "B.Arch", city: "Mangaluru", district: "Dakshina Kannada", state: "Karnataka", country: "India" },
-        { name: "Siddharth Verma", program: "B.Tech AI", city: "Bengaluru", district: "Bengaluru Urban", state: "Karnataka", country: "India" },
-        { name: "Kavya Murthy", program: "M.Tech CSE", city: "Mysuru", district: "Mysuru", state: "Karnataka", country: "India" },
-        { name: "Arjun Nair", program: "B.Tech ECE", city: "Kochi", district: "Ernakulam", state: "Kerala", country: "India" },
-        { name: "Neha Sharma", program: "B.Tech ME", city: "Mumbai", district: "Mumbai City", state: "Maharashtra", country: "India" },
-        { name: "Devansh Singh", program: "B.Tech CE", city: "Delhi", district: "New Delhi", state: "Delhi", country: "India" },
-        { name: "Fatima Al-Sayed", program: "M.Tech Data Sci", city: "Dubai", district: "Dubai", state: "Dubai", country: "UAE" }
-      ];
-
-      const newBatch = [];
-      for (let i = 0; i < count; i++) {
-        const item = samplePool[Math.floor(Math.random() * samplePool.length)];
-        const newId = 'STU' + (Math.floor(1000 + Math.random() * 9000));
-        newBatch.push({ ...item, id: newId, name: `${item.name} ${i+1}` });
-      }
-
-      students = [...newBatch, ...students];
-      persistStudents(students);
-      showToast(`Added ${count} sample student records!`);
-    }
-
-    function switchTab(targetTabId) {
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-      document.querySelectorAll('.nav-tab').forEach(el => {
-        el.classList.remove('border-blue-500', 'text-blue-400');
-        el.classList.add('border-transparent', 'text-slate-400');
-      });
-
-      const activeTabEl = document.getElementById(targetTabId);
-      if (activeTabEl) activeTabEl.classList.remove('hidden');
-
-      const btn = document.querySelector(`[data-tab="${targetTabId}"]`);
-      if (btn) {
-        btn.classList.remove('border-transparent', 'text-slate-400');
-        btn.classList.add('border-blue-500', 'text-blue-400');
-      }
-
-      if (targetTabId === 'tab-map') {
-        setTimeout(() => {
-          initLeafletMap();
-          if (leafletMap) leafletMap.invalidateSize();
-        }, 100);
-      }
-    }
-
-    function exportData() {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(students, null, 2));
-      const downloadAnchor = document.createElement('a');
-      downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `KITS_student_locality_data_${new Date().toISOString().slice(0, 10)}.json`);
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      downloadAnchor.remove();
-      showToast("Exported student database JSON!");
-    }
-
-    function importData(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = async function(evt) {
-        try {
-          const parsed = JSON.parse(evt.target.result);
-          if (Array.isArray(parsed)) {
-            await persistStudents(parsed);
-            showToast(`Successfully imported ${parsed.length} student records!`);
-          } else {
-            showToast("Invalid JSON file format. Must be an array.", "error");
-          }
-        } catch (err) {
-          showToast("Failed to parse imported JSON file.", "error");
-        }
-      };
-      reader.readAsText(file);
-    }
-
-    function promptReset() {
-      document.getElementById('reset-modal')?.classList.remove('hidden');
-    }
-
-    function closeResetModal() {
-      document.getElementById('reset-modal')?.classList.add('hidden');
-    }
-
-    async function confirmResetDemoData() {
-      closeResetModal();
-      const freshDefaults = JSON.parse(JSON.stringify(DEFAULT_STUDENTS));
-      await persistStudents(freshDefaults);
-      showToast("Reset demo dataset back to 30 default students.");
-    }
-
-    function openSyncModal() {
-      const modal = document.getElementById('sync-modal');
-      const textarea = document.getElementById('sync-config-input');
-      const saved = localStorage.getItem(CUSTOM_CONFIG_KEY);
-      if (saved && textarea) textarea.value = saved;
-      if (modal) modal.classList.remove('hidden');
-    }
-
-    function closeSyncModal() {
-      document.getElementById('sync-modal')?.classList.add('hidden');
-    }
-
-    function saveCustomSyncConfig() {
-      const textarea = document.getElementById('sync-config-input');
-      if (!textarea) return;
-      const raw = textarea.value.trim();
-      
-      if (!raw) {
-        localStorage.removeItem(CUSTOM_CONFIG_KEY);
-        showToast("Reset sync config to default.");
-        closeSyncModal();
-        window.location.reload();
+    window.deleteStudent = function(id) {
+      if (currentUser.role !== 'admin') {
+        showToast('Access Denied: Only authenticated administrators can delete student records.', 'error');
+        document.getElementById('login-modal').classList.remove('hidden');
         return;
       }
 
-      try {
-        const parsed = JSON.parse(raw);
-        if (parsed.apiKey && parsed.projectId) {
-          localStorage.setItem(CUSTOM_CONFIG_KEY, JSON.stringify(parsed));
-          showToast("Custom database connected! Reloading...");
-          closeSyncModal();
-          setTimeout(() => window.location.reload(), 1000);
-        } else {
-          showToast("Invalid Config: Must contain 'apiKey' and 'projectId'", "error");
-        }
-      } catch (e) {
-        showToast("Invalid JSON syntax in config.", "error");
+      if (confirm(`Are you sure you want to delete student ID ${id}?`)) {
+        students = students.filter(x => x.id !== id);
+        saveStudents();
+        showToast(`Student ${id} deleted successfully.`, 'success');
       }
+    };
+
+    function resetForm() {
+      document.getElementById('edit-id').value = '';
+      document.getElementById('student-form').reset();
+      document.getElementById('country').value = 'India';
+      document.getElementById('program').value = 'B.Tech CSE';
+      document.getElementById('form-title').textContent = 'Add New Student Record';
+      document.getElementById('form-mode-badge').textContent = 'NEW';
+      document.getElementById('form-mode-badge').className = 'text-[10px] bg-blue-500/20 text-blue-300 border border-blue-500/30 px-2 py-0.5 rounded font-mono';
+      document.getElementById('form-submit-btn').textContent = 'Create & Auto-Classify Location';
+      document.getElementById('form-cancel-btn').classList.add('hidden');
     }
 
-    function clearCustomSyncConfig() {
-      localStorage.removeItem(CUSTOM_CONFIG_KEY);
-      showToast("Cleared custom config. Reloading...");
-      closeSyncModal();
-      setTimeout(() => window.location.reload(), 800);
-    }
-
-    function copyNAACTable() {
-      const table = document.getElementById('naac-report-table');
-      if (!table) return;
-      const range = document.createRange();
-      range.selectNode(table);
-      window.getSelection().removeAllRanges();
-      window.getSelection().addRange(range);
-      try {
-        document.execCommand('copy');
-        showToast("Copied NAAC / NIRF Table to clipboard!");
-      } catch (err) {
-        showToast("Failed to copy table automatically.", "error");
-      }
-      window.getSelection().removeAllRanges();
-    }
-
-    document.addEventListener('DOMContentLoaded', async function() {
-      await initCloudStorage();
-      loadSavedSession();
-
-      // Navigation tabs
-      document.querySelectorAll('.nav-tab').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const tabId = e.currentTarget.getAttribute('data-tab');
-          switchTab(tabId);
-        });
-      });
-
-      // Authentication modal listeners
-      document.getElementById('btn-open-login')?.addEventListener('click', openLoginModal);
-      document.getElementById('btn-login-close')?.addEventListener('click', closeLoginModal);
-      
-      document.querySelectorAll('.role-preset-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const role = e.currentTarget.getAttribute('data-role');
-          document.getElementById('login-selected-role').value = role;
-
-          document.querySelectorAll('.role-preset-btn').forEach(b => {
-            b.className = "role-preset-btn p-2.5 rounded-xl border border-slate-800 bg-slate-950/60 text-slate-400 hover:border-slate-700 text-center transition flex flex-col items-center gap-1";
-          });
-          e.currentTarget.className = "role-preset-btn p-2.5 rounded-xl border border-blue-500 bg-blue-500/10 text-blue-400 text-center transition flex flex-col items-center gap-1";
-
-          const emailInput = document.getElementById('login-email');
-          if (emailInput) emailInput.value = `${role}@kits.edu.in`;
-        });
-      });
-
-      document.getElementById('btn-demo-credentials')?.addEventListener('click', () => {
-        document.getElementById('login-email').value = "admin@kits.edu.in";
-        document.getElementById('login-password').value = "kits2026";
-        showToast("Auto-filled demo credentials");
-      });
-
-      document.getElementById('login-form')?.addEventListener('submit', (e) => {
+    // --- EVENT LISTENERS & INTERACTIONS ---
+    function setupEventListeners() {
+      // Form Submission
+      document.getElementById('student-form').addEventListener('submit', (e) => {
         e.preventDefault();
-        const role = document.getElementById('login-selected-role').value || 'admin';
-        const email = document.getElementById('login-email').value.trim();
-        loginUser(role, email);
+        if (currentUser.role !== 'admin') {
+          showToast('Access Denied: Only verified administrators can add or update records.', 'error');
+          document.getElementById('login-modal').classList.remove('hidden');
+          return;
+        }
+
+        const editId = document.getElementById('edit-id').value;
+        const name = document.getElementById('name').value.trim();
+        const program = document.getElementById('program').value.trim();
+        const city = document.getElementById('city').value.trim();
+        const district = document.getElementById('district').value.trim();
+        const state = document.getElementById('state').value.trim();
+        const country = document.getElementById('country').value.trim();
+
+        // Approximate realistic coords based on city or random offset from campus if unknown
+        let lat = CAMPUS.lat + (Math.random() - 0.5) * 2;
+        let lng = CAMPUS.lng + (Math.random() - 0.5) * 2;
+
+        const cityLower = city.toLowerCase();
+        if (cityLower === 'surathkal') { lat = 13.012; lng = 74.795; }
+        else if (cityLower === 'mangaluru') { lat = 12.914; lng = 74.856; }
+        else if (cityLower === 'udupi') { lat = 13.340; lng = 74.742; }
+        else if (cityLower === 'bengaluru') { lat = 12.971; lng = 77.594; }
+        else if (cityLower === 'mumbai') { lat = 19.076; lng = 72.877; }
+        else if (cityLower === 'delhi') { lat = 28.613; lng = 77.209; }
+
+        if (editId) {
+          const idx = students.findIndex(x => x.id === editId);
+          if (idx !== -1) {
+            students[idx] = { ...students[idx], name, program, city, district, state, country, lat, lng };
+            showToast(`Student ${editId} updated successfully!`, 'success');
+          }
+        } else {
+          const newId = `KITS-2026-${String(students.length + 101).padStart(3, '0')}`;
+          students.push({ id: newId, name, program, city, district, state, country, lat, lng });
+          showToast(`New student ${newId} added & classified!`, 'success');
+        }
+
+        saveStudents();
+        resetForm();
       });
 
-      document.getElementById('student-form').addEventListener('submit', handleFormSubmit);
-      document.getElementById('form-cancel-btn').addEventListener('click', cancelEdit);
-      document.getElementById('search-input').addEventListener('input', renderApp);
-      document.getElementById('filter-category').addEventListener('change', renderApp);
+      document.getElementById('form-cancel-btn').addEventListener('click', resetForm);
 
-      document.getElementById('btn-export').addEventListener('click', exportData);
-      document.getElementById('btn-import-trigger').addEventListener('click', function() {
+      // Search & Filter
+      document.getElementById('search-input').addEventListener('input', renderStudentTable);
+      document.getElementById('filter-category').addEventListener('change', renderStudentTable);
+
+      // Quick Batch Generators
+      document.getElementById('btn-gen-10').addEventListener('click', () => {
+        if (currentUser.role !== 'admin') { showToast('Access Denied: Admin password required.', 'error'); document.getElementById('login-modal').classList.remove('hidden'); return; }
+        generateRandomBatch(10);
+      });
+      document.getElementById('btn-gen-25').addEventListener('click', () => {
+        if (currentUser.role !== 'admin') { showToast('Access Denied: Admin password required.', 'error'); document.getElementById('login-modal').classList.remove('hidden'); return; }
+        generateRandomBatch(25);
+      });
+
+      // Export JSON
+      document.getElementById('btn-export').addEventListener('click', () => {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(students, null, 2));
+        const dlAnchor = document.createElement('a');
+        dlAnchor.setAttribute("href", dataStr);
+        dlAnchor.setAttribute("download", `KITS_Student_Locality_Export_${new Date().toISOString().slice(0,10)}.json`);
+        document.body.appendChild(dlAnchor);
+        dlAnchor.click();
+        dlAnchor.remove();
+        showToast('Student database exported as JSON successfully.', 'success');
+      });
+
+      // Import JSON Trigger
+      document.getElementById('btn-import-trigger').addEventListener('click', () => {
+        if (currentUser.role !== 'admin') { showToast('Access Denied: Admin password required.', 'error'); document.getElementById('login-modal').classList.remove('hidden'); return; }
         document.getElementById('import-file').click();
       });
-      document.getElementById('import-file').addEventListener('change', importData);
-      document.getElementById('btn-prompt-reset').addEventListener('click', promptReset);
-      document.getElementById('btn-modal-cancel').addEventListener('click', closeResetModal);
-      document.getElementById('btn-modal-confirm').addEventListener('click', confirmResetDemoData);
 
-      document.getElementById('btn-gen-10').addEventListener('click', () => generateBatchStudents(10));
-      document.getElementById('btn-gen-25').addEventListener('click', () => generateBatchStudents(25));
-      document.getElementById('btn-copy-report').addEventListener('click', copyNAACTable);
+      document.getElementById('import-file').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          try {
+            const imported = JSON.parse(evt.target.result);
+            if (Array.isArray(imported)) {
+              students = imported;
+              saveStudents();
+              showToast(`Successfully imported ${imported.length} student records!`, 'success');
+            } else {
+              showToast('Invalid JSON file format.', 'error');
+            }
+          } catch(err) {
+            showToast('Failed to parse JSON file.', 'error');
+          }
+        };
+        reader.readAsText(file);
+      });
 
-      // Sync settings modal bindings
-      document.getElementById('btn-sync-settings').addEventListener('click', openSyncModal);
-      document.getElementById('btn-sync-close').addEventListener('click', closeSyncModal);
-      document.getElementById('btn-sync-modal-cancel').addEventListener('click', closeSyncModal);
-      document.getElementById('btn-save-sync').addEventListener('click', saveCustomSyncConfig);
-      document.getElementById('btn-clear-sync').addEventListener('click', clearCustomSyncConfig);
-    });
+      // Reset Demo Modal
+      document.getElementById('btn-prompt-reset').addEventListener('click', () => {
+        if (currentUser.role !== 'admin') { showToast('Access Denied: Admin password required.', 'error'); document.getElementById('login-modal').classList.remove('hidden'); return; }
+        document.getElementById('reset-modal').classList.remove('hidden');
+      });
+      document.getElementById('btn-modal-cancel').addEventListener('click', () => {
+        document.getElementById('reset-modal').classList.add('hidden');
+      });
+      document.getElementById('btn-modal-confirm').addEventListener('click', () => {
+        students = [...INITIAL_STUDENTS];
+        saveStudents();
+        document.getElementById('reset-modal').classList.add('hidden');
+        showToast('Database reset to default 30 sample students.', 'success');
+      });
+
+      // Sync Modal
+      document.getElementById('btn-sync-settings').addEventListener('click', () => {
+        document.getElementById('sync-modal').classList.remove('hidden');
+      });
+      document.getElementById('btn-sync-close').addEventListener('click', () => {
+        document.getElementById('sync-modal').classList.add('hidden');
+      });
+      document.getElementById('btn-sync-modal-cancel').addEventListener('click', () => {
+        document.getElementById('sync-modal').classList.add('hidden');
+      });
+      document.getElementById('btn-save-sync').addEventListener('click', () => {
+        document.getElementById('sync-modal').classList.add('hidden');
+        showToast('Cloud database sync channel linked successfully!', 'success');
+      });
+
+      // Copy NAAC Report
+      document.getElementById('btn-copy-report').addEventListener('click', () => {
+        const table = document.getElementById('naac-report-table');
+        let text = "";
+        for (let row of table.rows) {
+          let cols = Array.from(row.cells).map(c => c.innerText.trim());
+          text += cols.join("\t") + "\n";
+        }
+        navigator.clipboard.writeText(text).then(() => {
+          showToast('NAAC / NIRF report matrix copied to clipboard!', 'success');
+        });
+      });
+
+      // Login Modal Controls
+      document.getElementById('btn-open-login').addEventListener('click', () => {
+        document.getElementById('login-password').value = '';
+        document.getElementById('login-modal').classList.remove('hidden');
+      });
+      document.getElementById('btn-login-close').addEventListener('click', () => {
+        document.getElementById('login-modal').classList.add('hidden');
+      });
+
+      // Admin preset buttons inside login modal
+      document.querySelectorAll('.admin-preset-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.admin-preset-btn').forEach(b => {
+            b.className = 'admin-preset-btn p-2 rounded-xl border border-slate-800 bg-slate-950/60 text-slate-400 hover:border-slate-700 text-center transition flex flex-col items-center gap-1';
+          });
+          btn.className = 'admin-preset-btn p-2 rounded-xl border border-blue-500 bg-blue-500/10 text-blue-400 text-center transition flex flex-col items-center gap-1';
+          
+          const adminName = btn.getAttribute('data-admin');
+          const role = btn.getAttribute('data-role');
+          document.getElementById('login-selected-admin').value = adminName;
+          document.getElementById('login-selected-role').value = role;
+          
+          const nameInputContainer = document.getElementById('name-input-container');
+          const passwordContainer = document.getElementById('password-field-container');
+          const customNameInput = document.getElementById('login-custom-name');
+          const nameInputLabel = document.getElementById('name-input-label');
+
+          if (role === 'admin') {
+            passwordContainer.style.display = 'block';
+            nameInputContainer.style.display = 'none';
+          } else if (role === 'student') {
+            passwordContainer.style.display = 'none';
+            nameInputContainer.style.display = 'block';
+            nameInputLabel.textContent = 'Enter Student Name';
+            customNameInput.value = '';
+            customNameInput.placeholder = 'e.g. Aarav Shetty';
+          } else if (role === 'faculty') {
+            passwordContainer.style.display = 'none';
+            nameInputContainer.style.display = 'block';
+            nameInputLabel.textContent = 'Enter Faculty Name';
+            customNameInput.value = '';
+            customNameInput.placeholder = 'e.g. Dr. Ramesh Rao';
+          }
+        });
+      });
+
+      document.getElementById('login-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        let adminName = document.getElementById('login-selected-admin').value;
+        const role = document.getElementById('login-selected-role').value;
+        const password = document.getElementById('login-password').value;
+
+        if (role === 'admin') {
+          if (password !== 'admin@123') {
+            showToast('Incorrect password. Please try again.', 'error');
+            return;
+          }
+        } else {
+          const customNameInput = document.getElementById('login-custom-name').value.trim();
+          if (customNameInput) {
+            adminName = customNameInput;
+          } else {
+            showToast('Please enter your name.', 'error');
+            return;
+          }
+        }
+
+        currentUser = { name: adminName, email: `${adminName.toLowerCase().replace(/\s+/g, '')}@kits.edu.in`, role: role === 'admin' ? 'admin' : 'viewer' };
+        localStorage.setItem('kits_auth_v02', JSON.stringify(currentUser));
+        updateUserUI();
+        document.getElementById('login-modal').classList.add('hidden');
+        showToast(`Successfully signed in as ${role.toUpperCase()}: ${adminName}`, 'success');
+        renderStudentTable();
+      });
+    }
+
+    function generateRandomBatch(count) {
+      const firstNames = ["Aarav", "Vivaan", "Aditya", "Vihaan", "Arjun", "Sai", "Reyansh", "Ayaan", "Krishna", "Ishaan", "Ananya", "Aadhya", "Diya", "Sana", "Pari", "Riya", "Anika", "Navya", "Pooja", "Meera"];
+      const lastNames = ["Shetty", "Rao", "Kamath", "Hegde", "Pai", "Naik", "Suvarna", "Bhat", "Acharya", "Nayak", "Verma", "Sharma", "Gupta", "Patel", "Reddy", "Nair", "Menon", "Iyer", "Deshmukh", "Kulkarni"];
+      const programs = ["B.Tech CSE", "B.Tech ECE", "B.Tech AI & DS", "B.Tech Mechanical", "B.Tech Civil", "B.Tech EEE"];
+      const citiesPool = [
+        { city: "Surathkal", district: "Dakshina Kannada", state: "Karnataka", country: "India", lat: 13.012, lng: 74.793 },
+        { city: "Mangaluru", district: "Dakshina Kannada", state: "Karnataka", country: "India", lat: 12.914, lng: 74.856 },
+        { city: "Udupi", district: "Udupi", state: "Karnataka", country: "India", lat: 13.340, lng: 74.742 },
+        { city: "Bengaluru", district: "Bengaluru Urban", state: "Karnataka", country: "India", lat: 12.971, lng: 77.594 },
+        { city: "Mysuru", district: "Mysuru", state: "Karnataka", country: "India", lat: 12.295, lng: 76.639 },
+        { city: "Kochi", district: "Ernakulam", state: "Kerala", country: "India", lat: 9.931, lng: 76.267 },
+        { city: "Mumbai", district: "Mumbai Suburban", state: "Maharashtra", country: "India", lat: 19.076, lng: 72.877 },
+        { city: "Chennai", district: "Chennai", state: "Tamil Nadu", country: "India", lat: 13.082, lng: 80.270 },
+        { city: "Hyderabad", district: "Hyderabad", state: "Telangana", country: "India", lat: 17.385, lng: 78.486 },
+        { city: "Singapore", district: "Singapore Central", state: "Singapore", country: "Singapore", lat: 1.352, lng: 103.819 }
+      ];
+
+      for (let i = 0; i < count; i++) {
+        const fn = firstNames[Math.floor(Math.random() * firstNames.length)];
+        const ln = lastNames[Math.floor(Math.random() * lastNames.length)];
+        const prog = programs[Math.floor(Math.random() * programs.length)];
+        const loc = citiesPool[Math.floor(Math.random() * citiesPool.length)];
+        const newId = `KITS-2026-${String(students.length + 101).padStart(3, '0')}`;
+
+        students.push({
+          id: newId,
+          name: `${fn} ${ln}`,
+          program: prog,
+          city: loc.city,
+          district: loc.district,
+          state: loc.state,
+          country: loc.country,
+          lat: loc.lat + (Math.random() - 0.5) * 0.05,
+          lng: loc.lng + (Math.random() - 0.5) * 0.05
+        });
+      }
+
+      saveStudents();
+      showToast(`Generated and classified ${count} sample student records!`, 'success');
+    }
+
+    // Run initialization on DOM load
+    document.addEventListener('DOMContentLoaded', initApp);
   </script>
 </body>
 </html>
