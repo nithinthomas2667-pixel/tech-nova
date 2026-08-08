@@ -3,169 +3,346 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>V02 — Student Locality & Geographic Dashboard</title>
+  <title>V02 — Student Locality & Institutional Geographic Intelligence Dashboard</title>
+  
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- Leaflet CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Google Fonts -->
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
     body {
       font-family: 'Inter', sans-serif;
     }
+    .leaflet-popup-content-wrapper {
+      border-radius: 0.75rem;
+      padding: 0.25rem;
+    }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-900 min-h-screen p-4 md:p-6">
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans">
 
-  <div class="max-w-7xl mx-auto space-y-6">
-    
-    <!-- HEADER -->
-    <header class="bg-slate-900 text-white p-5 rounded-2xl shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-      <div>
-        <h1 class="text-xl md:text-2xl font-bold tracking-tight">V02 — Student Locality & Geographic Dashboard</h1>
-        <p class="text-slate-300 text-sm mt-1">
-          <span class="font-semibold text-white">Reference Campus:</span> National Institute of Technology | Kochi, Ernakulam Dist, Kerala, India
-        </p>
-        <div id="storage-status" class="mt-2 text-xs text-emerald-400 flex items-center gap-2">
-          <span id="storage-ping" class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span id="storage-status-text">Initializing Storage Sync...</span>
+  <!-- HEADER BAR -->
+  <header class="bg-slate-950 border-b border-slate-800 sticky top-0 z-40 shadow-md">
+    <div class="max-w-7xl mx-auto px-4 py-3 sm:px-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+      <div class="flex items-center gap-3">
+        <div class="p-2.5 bg-gradient-to-tr from-blue-600 to-indigo-500 rounded-xl shadow-lg shadow-blue-500/20 text-white font-black text-lg">
+          KITS
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base sm:text-lg font-bold text-white tracking-tight">Student Locality & Geographic Dashboard</h1>
+            <span class="px-2 py-0.5 text-[10px] uppercase font-bold tracking-wider rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">V02 Pro</span>
+          </div>
+          <p class="text-xs text-slate-400">
+            Reference Campus: <span class="text-slate-200 font-medium">Karnataka Institute of Tech & Science (KITS)</span> • Surathkal, Mangaluru, Karnataka
+          </p>
         </div>
       </div>
-      
-      <div class="flex flex-wrap items-center gap-2">
-        <button id="btn-sync-settings" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5 shadow-sm">
-          <span>📲</span> Cross-Device Sync
+
+      <div class="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
+        <div id="storage-status" class="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs text-emerald-400 flex items-center gap-2">
+          <span id="storage-ping" class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span id="storage-status-text">Initializing Storage...</span>
+        </div>
+
+        <!-- USER AUTHENTICATION BADGE & LOGIN TRIGGER -->
+        <div id="user-auth-badge" class="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs text-slate-200 flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-blue-400"></span>
+          <span id="user-display-name" class="font-medium">Administrator</span>
+          <span id="user-role-badge" class="px-1.5 py-0.5 text-[9px] rounded uppercase font-extrabold bg-blue-500/20 text-blue-400 border border-blue-500/30">ADMIN</span>
+        </div>
+        <button id="btn-open-login" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg border border-slate-700 transition flex items-center gap-1.5">
+          <span>👤</span> <span id="login-btn-text">Switch Account</span>
         </button>
-        <button id="btn-export" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded-lg transition-colors border border-slate-700 flex items-center gap-1.5">
+
+        <button id="btn-sync-settings" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg transition flex items-center gap-1.5 shadow-sm">
+          <span>📲</span> Sync Devices
+        </button>
+        <button id="btn-export" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg border border-slate-700 transition flex items-center gap-1.5">
           <span>📥</span> Export JSON
         </button>
-        <button id="btn-import-trigger" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded-lg transition-colors border border-slate-700 flex items-center gap-1.5">
-          <span>📤</span> Import JSON
+        <button id="btn-import-trigger" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg border border-slate-700 transition flex items-center gap-1.5">
+          <span>📤</span> Import
         </button>
         <input type="file" id="import-file" accept=".json" class="hidden">
-        <button id="btn-prompt-reset" class="px-3 py-2 bg-rose-600/90 hover:bg-rose-600 text-white text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5">
-          <span>↺</span> Reset Demo Data
+        <button id="btn-prompt-reset" class="px-3 py-1.5 bg-rose-900/40 hover:bg-rose-800/60 text-rose-300 border border-rose-700/50 text-xs font-semibold rounded-lg transition flex items-center gap-1.5">
+          <span>↺</span> Reset Demo
         </button>
       </div>
-    </header>
+    </div>
 
-    <!-- METRICS DASHBOARD -->
-    <section>
-      <h2 class="text-sm font-bold uppercase tracking-wider text-slate-500 mb-3">Accreditation Geographic Distribution</h2>
-      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
+    <!-- TABS NAVIGATION -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 border-t border-slate-800/80 flex space-x-1 sm:space-x-4 overflow-x-auto">
+      <button data-tab="tab-overview" class="nav-tab px-4 py-2.5 text-xs sm:text-sm font-semibold border-b-2 border-blue-500 text-blue-400 flex items-center gap-2 whitespace-nowrap transition">
+        <span>📊</span> Overview & Analytics
+      </button>
+      <button data-tab="tab-map" class="nav-tab px-4 py-2.5 text-xs sm:text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 whitespace-nowrap transition">
+        <span>🗺️</span> Geographic Spatial Map
+      </button>
+      <button data-tab="tab-students" class="nav-tab px-4 py-2.5 text-xs sm:text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 whitespace-nowrap transition">
+        <span>📋</span> Student Registry
+      </button>
+      <button data-tab="tab-naac" class="nav-tab px-4 py-2.5 text-xs sm:text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 whitespace-nowrap transition">
+        <span>📑</span> NAAC & NIRF Reports
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <div class="max-w-7xl mx-auto px-4 py-6 sm:px-6 flex-grow w-full space-y-6">
+
+    <!-- TAB 1: OVERVIEW & ANALYTICS -->
+    <section id="tab-overview" class="tab-content space-y-6">
+      
+      <!-- TOP METRIC CARDS -->
+      <div>
+        <div class="flex justify-between items-center mb-3">
+          <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400">Accreditation Geographic Distribution (NAAC / NIRF)</h2>
+          <span id="total-student-badge" class="text-xs bg-slate-800 text-slate-300 px-2.5 py-1 rounded-full font-semibold border border-slate-700">Total Students: 0</span>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+          
+          <div class="bg-slate-800/80 backdrop-blur border border-emerald-500/20 p-4 rounded-xl shadow-sm text-center relative overflow-hidden group">
+            <div class="absolute top-0 left-0 w-1 h-full bg-emerald-500"></div>
+            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Local (Surathkal)</span>
+            <div id="count-local" class="text-2xl sm:text-3xl font-extrabold text-emerald-400 my-1">0</div>
+            <span id="pct-local" class="text-xs text-emerald-300 font-medium bg-emerald-500/10 px-2 py-0.5 rounded-full inline-block">0%</span>
+          </div>
+
+          <div class="bg-slate-800/80 backdrop-blur border border-sky-500/20 p-4 rounded-xl shadow-sm text-center relative overflow-hidden group">
+            <div class="absolute top-0 left-0 w-1 h-full bg-sky-500"></div>
+            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wide">District (Dakshina Kannada)</span>
+            <div id="count-district" class="text-2xl sm:text-3xl font-extrabold text-sky-400 my-1">0</div>
+            <span id="pct-district" class="text-xs text-sky-300 font-medium bg-sky-500/10 px-2 py-0.5 rounded-full inline-block">0%</span>
+          </div>
+
+          <div class="bg-slate-800/80 backdrop-blur border border-amber-500/20 p-4 rounded-xl shadow-sm text-center relative overflow-hidden group">
+            <div class="absolute top-0 left-0 w-1 h-full bg-amber-500"></div>
+            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Within State (Karnataka)</span>
+            <div id="count-state" class="text-2xl sm:text-3xl font-extrabold text-amber-400 my-1">0</div>
+            <span id="pct-state" class="text-xs text-amber-300 font-medium bg-amber-500/10 px-2 py-0.5 rounded-full inline-block">0%</span>
+          </div>
+
+          <div class="bg-slate-800/80 backdrop-blur border border-orange-500/20 p-4 rounded-xl shadow-sm text-center relative overflow-hidden group">
+            <div class="absolute top-0 left-0 w-1 h-full bg-orange-500"></div>
+            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Other States (India)</span>
+            <div id="count-otherstate" class="text-2xl sm:text-3xl font-extrabold text-orange-400 my-1">0</div>
+            <span id="pct-otherstate" class="text-xs text-orange-300 font-medium bg-orange-500/10 px-2 py-0.5 rounded-full inline-block">0%</span>
+          </div>
+
+          <div class="bg-slate-800/80 backdrop-blur border border-pink-500/20 p-4 rounded-xl shadow-sm text-center relative overflow-hidden col-span-2 sm:col-span-1 group">
+            <div class="absolute top-0 left-0 w-1 h-full bg-pink-500"></div>
+            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wide">International</span>
+            <div id="count-intl" class="text-2xl sm:text-3xl font-extrabold text-pink-400 my-1">0</div>
+            <span id="pct-intl" class="text-xs text-pink-300 font-medium bg-pink-500/10 px-2 py-0.5 rounded-full inline-block">0%</span>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- CHARTS GRID -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
-          <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Local</span>
-          <div id="count-local" class="text-2xl md:text-3xl font-bold text-slate-900 my-1">0</div>
-          <span id="pct-local" class="text-xs text-emerald-600 font-medium">0% of total</span>
+        <!-- Donut Breakdown Chart -->
+        <div class="lg:col-span-5 bg-slate-800/60 border border-slate-700/60 p-5 rounded-2xl flex flex-col justify-between">
+          <div class="flex justify-between items-center mb-2">
+            <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
+              <span>🍩</span> Locality Category Ratio
+            </h3>
+            <span class="text-[10px] text-slate-400 bg-slate-900/80 px-2 py-1 rounded">NAAC Criteria 2.1</span>
+          </div>
+          <div class="relative w-full h-64 flex items-center justify-center p-2">
+            <canvas id="chart-locality-donut"></canvas>
+          </div>
+          <p class="text-xs text-slate-400 text-center mt-2 italic">
+            Automated tier ranking relative to reference campus at Surathkal, Karnataka.
+          </p>
         </div>
 
-        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
-          <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">District</span>
-          <div id="count-district" class="text-2xl md:text-3xl font-bold text-slate-900 my-1">0</div>
-          <span id="pct-district" class="text-xs text-sky-600 font-medium">0% of total</span>
+        <!-- Bar Chart: Top Representation States -->
+        <div class="lg:col-span-7 bg-slate-800/60 border border-slate-700/60 p-5 rounded-2xl flex flex-col justify-between">
+          <div class="flex justify-between items-center mb-2">
+            <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
+              <span>🏛️</span> Top Regional & State Representation
+            </h3>
+            <span class="text-[10px] text-slate-400 bg-slate-900/80 px-2 py-1 rounded">Diversity Metrics</span>
+          </div>
+          <div class="relative w-full h-64 p-2">
+            <canvas id="chart-states-bar"></canvas>
+          </div>
+          <div class="flex justify-between items-center text-xs text-slate-400 mt-2">
+            <span>Outer State Student Share: <strong id="stat-out-state-pct" class="text-orange-400">0%</strong></span>
+            <span>International Diversity: <strong id="stat-intl-pct" class="text-pink-400">0%</strong></span>
+          </div>
         </div>
 
-        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
-          <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Within State</span>
-          <div id="count-state" class="text-2xl md:text-3xl font-bold text-slate-900 my-1">0</div>
-          <span id="pct-state" class="text-xs text-amber-600 font-medium">0% of total</span>
-        </div>
+      </div>
 
-        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
-          <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Other State</span>
-          <div id="count-otherstate" class="text-2xl md:text-3xl font-bold text-slate-900 my-1">0</div>
-          <span id="pct-otherstate" class="text-xs text-orange-600 font-medium">0% of total</span>
+      <!-- DISTANCE RADIUS STATS -->
+      <div class="bg-gradient-to-r from-slate-800 to-slate-900 border border-slate-700/80 rounded-2xl p-5 shadow-lg">
+        <h3 class="text-sm font-bold text-slate-200 mb-3 flex items-center gap-2">
+          <span>📐</span> Spatial Commute & Distance Band Radius (From Surathkal Campus)
+        </h3>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+          <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800">
+            <span class="text-xs text-slate-400">Within 25 km</span>
+            <div id="radius-25" class="text-xl font-bold text-blue-400 mt-1">0</div>
+            <span class="text-[10px] text-slate-500">Day Scholars / Local</span>
+          </div>
+          <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800">
+            <span class="text-xs text-slate-400">25 - 150 km</span>
+            <div id="radius-150" class="text-xl font-bold text-indigo-400 mt-1">0</div>
+            <span class="text-[10px] text-slate-500">Coastal / Neighboring</span>
+          </div>
+          <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800">
+            <span class="text-xs text-slate-400">150 - 800 km</span>
+            <div id="radius-800" class="text-xl font-bold text-purple-400 mt-1">0</div>
+            <span class="text-[10px] text-slate-500">Inter-District / State</span>
+          </div>
+          <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800">
+            <span class="text-xs text-slate-400">&gt; 800 km & Global</span>
+            <div id="radius-far" class="text-xl font-bold text-pink-400 mt-1">0</div>
+            <span class="text-[10px] text-slate-500">National / International</span>
+          </div>
         </div>
+      </div>
 
-        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center col-span-2 sm:col-span-1">
-          <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">International</span>
-          <div id="count-intl" class="text-2xl md:text-3xl font-bold text-slate-900 my-1">0</div>
-          <span id="pct-intl" class="text-xs text-pink-600 font-medium">0% of total</span>
+    </section>
+
+    <!-- TAB 2: GEOGRAPHIC SPATIAL MAP -->
+    <section id="tab-map" class="tab-content hidden space-y-4">
+      <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+        <div>
+          <h2 class="text-base font-bold text-white flex items-center gap-2">
+            <span>🗺️</span> Spatial Distribution Map
+          </h2>
+          <p class="text-xs text-slate-400">
+            Interactive GIS plotting of student home locations relative to KITS Campus (Surathkal, Mangaluru: 13.0108° N, 74.7943° E).
+          </p>
         </div>
+        <div class="flex flex-wrap items-center gap-3 text-xs">
+          <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-emerald-500"></span> Local</span>
+          <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-sky-500"></span> District</span>
+          <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-amber-500"></span> Within State</span>
+          <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-orange-500"></span> Other State</span>
+          <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-pink-500"></span> Intl</span>
+        </div>
+      </div>
 
+      <div class="relative w-full h-[540px] rounded-2xl overflow-hidden border border-slate-700 shadow-xl bg-slate-950">
+        <div id="leaflet-map-container" class="w-full h-full"></div>
       </div>
     </section>
 
-    <!-- MAIN WORKFLOW AREA -->
-    <main class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <!-- TAB 3: STUDENT REGISTRY & FORM -->
+    <section id="tab-students" class="tab-content hidden grid grid-cols-1 lg:grid-cols-12 gap-6">
       
       <!-- LEFT FORM PANEL -->
-      <div class="lg:col-span-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm h-fit">
-        <h3 id="form-title" class="text-base font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100">Add New Student Record</h3>
+      <div class="lg:col-span-4 bg-slate-800/80 border border-slate-700 p-5 rounded-2xl h-fit space-y-4">
+        <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+          <h3 id="form-title" class="text-sm font-bold text-white">Add New Student Record</h3>
+          <span id="form-mode-badge" class="text-[10px] bg-blue-500/20 text-blue-300 border border-blue-500/30 px-2 py-0.5 rounded font-mono">NEW</span>
+        </div>
         
-        <form id="student-form" class="space-y-3">
+        <form id="student-form" class="space-y-3 text-xs">
           <input type="hidden" id="edit-id" value="">
           
           <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1" for="name">Full Name</label>
-            <input type="text" id="name" required placeholder="e.g. Aarav Sharma" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+            <label class="block font-semibold text-slate-300 mb-1" for="name">Full Name *</label>
+            <input type="text" id="name" required placeholder="e.g. Aarav Sharma" class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-100 focus:ring-2 focus:ring-blue-500 outline-none">
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1" for="program">Program</label>
-            <input type="text" id="program" required value="B.Tech CSE" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+            <label class="block font-semibold text-slate-300 mb-1" for="program">Academic Program *</label>
+            <input type="text" id="program" required value="B.Tech CSE" class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-100 focus:ring-2 focus:ring-blue-500 outline-none">
           </div>
 
           <div class="grid grid-cols-2 gap-2">
             <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1" for="city">City</label>
-              <input type="text" id="city" required placeholder="Kochi" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+              <label class="block font-semibold text-slate-300 mb-1" for="city">City / Town *</label>
+              <input type="text" id="city" required placeholder="Surathkal" class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-100 focus:ring-2 focus:ring-blue-500 outline-none">
             </div>
             <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1" for="district">District</label>
-              <input type="text" id="district" required placeholder="Ernakulam" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+              <label class="block font-semibold text-slate-300 mb-1" for="district">District *</label>
+              <input type="text" id="district" required placeholder="Dakshina Kannada" class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-100 focus:ring-2 focus:ring-blue-500 outline-none">
             </div>
           </div>
 
           <div class="grid grid-cols-2 gap-2">
             <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1" for="state">State</label>
-              <input type="text" id="state" required placeholder="Kerala" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+              <label class="block font-semibold text-slate-300 mb-1" for="state">State / Province *</label>
+              <input type="text" id="state" required placeholder="Karnataka" class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-100 focus:ring-2 focus:ring-blue-500 outline-none">
             </div>
             <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1" for="country">Country</label>
-              <input type="text" id="country" required value="India" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+              <label class="block font-semibold text-slate-300 mb-1" for="country">Country *</label>
+              <input type="text" id="country" required value="India" class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-100 focus:ring-2 focus:ring-blue-500 outline-none">
             </div>
           </div>
 
-          <button type="submit" id="form-submit-btn" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-colors mt-2">
-            Create & Auto-Classify
-          </button>
-          
-          <button type="button" id="form-cancel-btn" class="hidden w-full py-2 bg-slate-500 hover:bg-slate-600 text-white text-xs font-semibold rounded-lg transition-colors">
-            Cancel Edit
-          </button>
+          <div class="pt-2 flex flex-col gap-2">
+            <button type="submit" id="form-submit-btn" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg shadow-sm transition">
+              Create & Auto-Classify Location
+            </button>
+            <button type="button" id="form-cancel-btn" class="hidden w-full py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 font-semibold rounded-lg transition">
+              Cancel Edit
+            </button>
+          </div>
         </form>
+
+        <!-- BATCH GENERATOR -->
+        <div class="border-t border-slate-700/80 pt-4 mt-4 space-y-2">
+          <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wide block">⚡ Quick Sample Generator</span>
+          <div class="grid grid-cols-2 gap-2">
+            <button id="btn-gen-10" class="py-1.5 px-2 bg-slate-900 hover:bg-slate-950 border border-slate-700 text-slate-300 rounded text-[11px] transition">
+              +10 Sample Students
+            </button>
+            <button id="btn-gen-25" class="py-1.5 px-2 bg-slate-900 hover:bg-slate-950 border border-slate-700 text-slate-300 rounded text-[11px] transition">
+              +25 Random Batch
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- RIGHT DATA TABLE PANEL -->
-      <div class="lg:col-span-8 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+      <div class="lg:col-span-8 bg-slate-800/80 border border-slate-700 p-5 rounded-2xl space-y-4">
         
-        <div class="flex flex-col sm:flex-row gap-3">
+        <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
           <div class="relative flex-1">
-            <input type="text" id="search-input" placeholder="Search student name, ID, or city..." class="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none">
-            <svg class="w-4 h-4 absolute left-3 top-2.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            <input type="text" id="search-input" placeholder="Search student name, ID, city, or district..." class="w-full pl-9 pr-3 py-2 text-xs rounded-lg bg-slate-900 border border-slate-700 text-slate-100 focus:ring-2 focus:ring-blue-500 outline-none">
+            <svg class="w-4 h-4 absolute left-3 top-2.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
           </div>
 
-          <select id="filter-category" class="px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-            <option value="All">All Categories</option>
-            <option value="Local">Local</option>
-            <option value="District">District</option>
-            <option value="Within State">Within State</option>
-            <option value="Other State">Other State</option>
+          <select id="filter-category" class="px-3 py-2 text-xs rounded-lg bg-slate-900 border border-slate-700 text-slate-200 focus:ring-2 focus:ring-blue-500 outline-none">
+            <option value="All">All Locality Categories</option>
+            <option value="Local">Local (Surathkal)</option>
+            <option value="District">District (Dakshina Kannada)</option>
+            <option value="Within State">Within State (Karnataka)</option>
+            <option value="Other State">Other State (India)</option>
             <option value="International">International</option>
           </select>
         </div>
 
-        <div class="overflow-x-auto rounded-xl border border-slate-200">
-          <table class="w-full text-left text-xs md:text-sm">
-            <thead class="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+        <div class="overflow-x-auto rounded-xl border border-slate-700">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-900/90 text-slate-400 font-semibold border-b border-slate-700">
               <tr>
-                <th class="p-3">Student</th>
-                <th class="p-3">Address</th>
-                <th class="p-3">Derived Locality</th>
+                <th class="p-3">Student & ID</th>
+                <th class="p-3">Origin Address</th>
+                <th class="p-3">Est. Distance</th>
+                <th class="p-3">Locality Classification</th>
                 <th class="p-3 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody id="student-table-body" class="divide-y divide-slate-100">
+            <tbody id="student-table-body" class="divide-y divide-slate-700/60 text-slate-200">
               <!-- Dynamic Rows -->
             </tbody>
           </table>
@@ -173,28 +350,82 @@
 
       </div>
 
-    </main>
-  </div>
+    </section>
 
-  <!-- TOAST NOTIFICATION CONTAINER -->
-  <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
-
-  <!-- CROSS-DEVICE SYNC MODAL -->
-  <div id="sync-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl border border-slate-100 space-y-4">
-      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-        <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
-          <span>📲</span> Connect Phone & Laptop Live
-        </h3>
-        <button id="btn-sync-close" class="text-slate-400 hover:text-slate-600 font-bold text-lg">&times;</button>
+    <!-- TAB 4: NAAC & NIRF ACCREDITATION REPORTS -->
+    <section id="tab-naac" class="tab-content hidden space-y-6">
+      <div class="bg-slate-800/80 border border-slate-700 p-5 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h2 class="text-base font-bold text-white flex items-center gap-2">
+            <span>📑</span> NAAC Criterion 2.1 & NIRF Geographic Diversity Report
+          </h2>
+          <p class="text-xs text-slate-400">
+            Export compliant geographic data matrices formatted for institutional SSR submission and NIRF Ranking data sheets.
+          </p>
+        </div>
+        <button id="btn-copy-report" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-lg shadow-md transition flex items-center gap-2">
+          <span>📋</span> Copy Formatted Table
+        </button>
       </div>
 
-      <p class="text-xs text-slate-600 leading-relaxed">
-        To sync student edits automatically between your phone and laptop, paste your database connection config below. Once saved, any record created or edited on your phone will reflect instantly on your laptop!
+      <div class="bg-slate-800/80 border border-slate-700 rounded-2xl overflow-hidden p-5">
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Institutional Geographic Breakdown Table</h3>
+        
+        <div class="overflow-x-auto">
+          <table id="naac-report-table" class="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr class="bg-slate-900 border-b border-slate-700 text-slate-300 font-bold">
+                <th class="p-3 border-r border-slate-800">Category Tier</th>
+                <th class="p-3 border-r border-slate-800">Criteria Scope</th>
+                <th class="p-3 border-r border-slate-800 text-center">Student Count</th>
+                <th class="p-3 border-r border-slate-800 text-center">Percentage (%)</th>
+                <th class="p-3 text-slate-400">NAAC / NIRF Metric Mapping</th>
+              </tr>
+            </thead>
+            <tbody id="naac-table-body" class="divide-y divide-slate-700/60 text-slate-200 font-mono">
+              <!-- Dynamic Report Rows -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-slate-800/60 border border-slate-700 p-5 rounded-2xl space-y-2">
+          <h4 class="text-xs font-bold text-blue-400 uppercase tracking-wide">NAAC Metric 2.1.1 & 2.1.2 Guidelines</h4>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            NAAC assesses the institutional capability to attract students from outside the home state and country to evaluate diversity. A healthy balance of <strong>Within State</strong> vs. <strong>Other States / International</strong> earns optimal metric points.
+          </p>
+        </div>
+        <div class="bg-slate-800/60 border border-slate-700 p-5 rounded-2xl space-y-2">
+          <h4 class="text-xs font-bold text-emerald-400 uppercase tracking-wide">NIRF Student Diversity Metric</h4>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            NIRF calculates "Out of State" percentage ($P_{OS}$) and "Out of Country" percentage ($P_{OC}$) to award score points under the <em>Outreach and Inclusivity (OI)</em> parameter.
+          </p>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- CROSS-DEVICE SYNC MODAL -->
+  <div id="sync-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 rounded-2xl p-6 max-w-md w-full shadow-2xl border border-slate-800 space-y-4">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <span>📲</span> Connect Phone & Laptop Live
+        </h3>
+        <button id="btn-sync-close" class="text-slate-400 hover:text-slate-200 font-bold text-lg">&times;</button>
+      </div>
+
+      <p class="text-xs text-slate-400 leading-relaxed">
+        To sync student records in real time between your phone and laptop, paste your database configuration below.
       </p>
 
       <div>
-        <label class="block text-xs font-semibold text-slate-700 mb-1">Database Config (JSON)</label>
+        <label class="block text-xs font-semibold text-slate-300 mb-1">Database Config (JSON)</label>
         <textarea id="sync-config-input" rows="5" placeholder='{
   "apiKey": "...",
   "authDomain": "...",
@@ -202,29 +433,103 @@
   "storageBucket": "...",
   "messagingSenderId": "...",
   "appId": "..."
-}' class="w-full p-2.5 text-xs font-mono bg-slate-50 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 outline-none"></textarea>
+}' class="w-full p-2.5 text-xs font-mono bg-slate-950 text-slate-200 rounded-lg border border-slate-700 focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
       </div>
 
       <div class="flex items-center justify-between pt-2">
-        <button id="btn-clear-sync" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition-colors">
-          Reset to Default
+        <button id="btn-clear-sync" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg transition">
+          Reset Default
         </button>
         <div class="flex gap-2">
-          <button id="btn-sync-modal-cancel" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-semibold rounded-lg transition-colors">Cancel</button>
-          <button id="btn-save-sync" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg transition-colors">Save & Link</button>
+          <button id="btn-sync-modal-cancel" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg transition">Cancel</button>
+          <button id="btn-save-sync" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-lg transition">Save & Link</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- CUSTOM CONFIRMATION MODAL -->
-  <div id="reset-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl border border-slate-100 space-y-4">
-      <h3 class="text-lg font-bold text-slate-900">Reset Demo Data?</h3>
-      <p class="text-xs text-slate-600">This will revert all student records back to the default 30 initial sample students across all connected sessions.</p>
-      <div class="flex gap-2 justify-end">
-        <button id="btn-modal-cancel" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-semibold rounded-lg transition-colors">Cancel</button>
-        <button id="btn-modal-confirm" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-lg transition-colors">Reset Data</button>
+  <!-- RESET CONFIRMATION MODAL -->
+  <div id="reset-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 rounded-2xl p-6 max-w-sm w-full shadow-2xl border border-slate-800 space-y-4">
+      <h3 class="text-base font-bold text-white">Reset Demo Data?</h3>
+      <p class="text-xs text-slate-400 leading-relaxed">This will revert student records back to the default 30 sample students across all connected devices.</p>
+      <div class="flex gap-2 justify-end pt-2">
+        <button id="btn-modal-cancel" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg transition">Cancel</button>
+        <button id="btn-modal-confirm" class="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold rounded-lg transition">Reset Data</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOGIN & AUTHENTICATION MODAL -->
+  <div id="login-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 rounded-2xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-slate-800 space-y-6 relative overflow-hidden">
+      <!-- Top Decorative Gradient Line -->
+      <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-600 via-indigo-500 to-emerald-400"></div>
+      
+      <div class="flex justify-between items-start">
+        <div class="flex items-center gap-3">
+          <div class="p-2.5 bg-gradient-to-tr from-blue-600 to-indigo-500 rounded-xl shadow-lg text-white font-black text-lg">
+            KITS
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-white tracking-tight">Institutional Portal Login</h3>
+            <p class="text-xs text-slate-400">Student Locality Intelligence Dashboard</p>
+          </div>
+        </div>
+        <button id="btn-login-close" class="text-slate-400 hover:text-slate-200 font-bold text-xl leading-none">&times;</button>
+      </div>
+
+      <!-- ROLE PRESET SELECTOR -->
+      <div>
+        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Select Access Role</label>
+        <div class="grid grid-cols-3 gap-2">
+          <button type="button" data-role="admin" class="role-preset-btn p-2.5 rounded-xl border border-blue-500 bg-blue-500/10 text-blue-400 text-center transition flex flex-col items-center gap-1">
+            <span class="text-base">🎓</span>
+            <span class="text-[11px] font-bold">Admin</span>
+            <span class="text-[9px] text-slate-400">Full Access</span>
+          </button>
+          <button type="button" data-role="faculty" class="role-preset-btn p-2.5 rounded-xl border border-slate-800 bg-slate-950/60 text-slate-400 hover:border-slate-700 text-center transition flex flex-col items-center gap-1">
+            <span class="text-base">🏫</span>
+            <span class="text-[11px] font-bold">Faculty</span>
+            <span class="text-[9px] text-slate-400">Edit Records</span>
+          </button>
+          <button type="button" data-role="guest" class="role-preset-btn p-2.5 rounded-xl border border-slate-800 bg-slate-950/60 text-slate-400 hover:border-slate-700 text-center transition flex flex-col items-center gap-1">
+            <span class="text-base">👁️</span>
+            <span class="text-[11px] font-bold">Auditor</span>
+            <span class="text-[9px] text-slate-400">Read Only</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <form id="login-form" class="space-y-4 text-xs">
+        <input type="hidden" id="login-selected-role" value="admin">
+
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1" for="login-email">Institutional Email / Username</label>
+          <input type="text" id="login-email" required value="admin@kits.edu.in" placeholder="user@kits.edu.in" class="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 focus:ring-2 focus:ring-blue-500 outline-none">
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1" for="login-password">Security Password</label>
+          <input type="password" id="login-password" required value="••••••••" class="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 focus:ring-2 focus:ring-blue-500 outline-none">
+        </div>
+
+        <div class="flex items-center justify-between text-[11px] text-slate-400">
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked class="rounded border-slate-800 bg-slate-950 text-blue-600 focus:ring-0">
+            <span>Remember session</span>
+          </label>
+          <button type="button" id="btn-demo-credentials" class="text-blue-400 hover:underline">Auto-fill Demo Credentials</button>
+        </div>
+
+        <button type="submit" class="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-xl shadow-lg shadow-blue-500/20 transition flex items-center justify-center gap-2 text-xs">
+          <span>🔓</span> Sign In to Portal
+        </button>
+      </form>
+
+      <div class="border-t border-slate-800/80 pt-3 text-center text-[11px] text-slate-500">
+        Karnataka Institute of Tech & Science (KITS) • NAAC / NIRF Data Security
       </div>
     </div>
   </div>
@@ -232,52 +537,84 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, collection, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    const INST = { city: "Kochi", district: "Ernakulam", state: "Kerala", country: "India" };
-    const LOCAL_STORAGE_KEY = 'v02_locality_students_cloud_v1';
+    // Reference Institution (Surathkal Campus)
+    const INST = {
+      name: "KITS Surathkal",
+      city: "Surathkal",
+      district: "Dakshina Kannada",
+      state: "Karnataka",
+      country: "India",
+      lat: 13.0108,
+      lng: 74.7943
+    };
+
+    const LOCAL_STORAGE_KEY = 'v02_locality_students_karnataka_v2';
     const CUSTOM_CONFIG_KEY = 'v02_custom_firebase_config';
 
+    // Known city coordinates database for Leaflet Map & Distance calculation
+    const CITY_COORDS = {
+      "surathkal": { lat: 13.0108, lng: 74.7943 },
+      "mangaluru": { lat: 12.9141, lng: 74.8560 },
+      "mangalore": { lat: 12.9141, lng: 74.8560 },
+      "bantwal": { lat: 12.8943, lng: 75.0352 },
+      "puttur": { lat: 12.7686, lng: 75.2027 },
+      "moodabidri": { lat: 13.0694, lng: 74.9961 },
+      "belthangady": { lat: 13.0031, lng: 75.2974 },
+      "sullia": { lat: 12.5573, lng: 75.3900 },
+      "udupi": { lat: 13.3409, lng: 74.7421 },
+      "bengaluru": { lat: 12.9716, lng: 77.5946 },
+      "bangalore": { lat: 12.9716, lng: 77.5946 },
+      "mysuru": { lat: 12.2958, lng: 76.6394 },
+      "hubballi": { lat: 15.3647, lng: 75.1240 },
+      "shivamogga": { lat: 13.9299, lng: 75.5681 },
+      "belagavi": { lat: 15.8497, lng: 74.4977 },
+      "kalaburagi": { lat: 17.3297, lng: 76.8343 },
+      "davanagere": { lat: 14.4644, lng: 75.9218 },
+      "mumbai": { lat: 19.0760, lng: 72.8777 },
+      "kochi": { lat: 9.9312, lng: 76.2673 },
+      "chennai": { lat: 13.0827, lng: 80.2707 },
+      "hyderabad": { lat: 17.3850, lng: 78.4867 },
+      "jaipur": { lat: 26.9124, lng: 75.7873 },
+      "delhi": { lat: 28.7041, lng: 77.1025 },
+      "dubai": { lat: 25.2048, lng: 55.2708 },
+      "london": { lat: 51.5074, lng: -0.1278 },
+      "tokyo": { lat: 35.6762, lng: 139.6503 },
+      "new york": { lat: 40.7128, lng: -74.0060 }
+    };
+
     const DEFAULT_STUDENTS = [
-      // Local
-      { id: "STU1001", name: "Aarav Sharma", program: "B.Tech CSE", city: "Kochi", district: "Ernakulam", state: "Kerala", country: "India" },
-      { id: "STU1002", name: "Ananya Nair", program: "B.Tech ECE", city: "Kochi", district: "Ernakulam", state: "Kerala", country: "India" },
-      { id: "STU1003", name: "Rohan Varma", program: "B.Tech ME", city: "Kochi", district: "Ernakulam", state: "Kerala", country: "India" },
-      { id: "STU1004", name: "Diya Menon", program: "M.Tech AI", city: "Kochi", district: "Ernakulam", state: "Kerala", country: "India" },
-      { id: "STU1005", name: "Siddharth Kumar", program: "B.Tech EEE", city: "Kochi", district: "Ernakulam", state: "Kerala", country: "India" },
-      { id: "STU1006", name: "Meera Pillai", program: "B.Arch", city: "Kochi", district: "Ernakulam", state: "Kerala", country: "India" },
+      { id: "STU1001", name: "Chinmay Gowda", program: "B.Tech CSE", city: "Surathkal", district: "Dakshina Kannada", state: "Karnataka", country: "India" },
+      { id: "STU1002", name: "Ananya Bhat", program: "B.Tech ECE", city: "Surathkal", district: "Dakshina Kannada", state: "Karnataka", country: "India" },
+      { id: "STU1003", name: "Rohan Shetty", program: "B.Tech ME", city: "Surathkal", district: "Dakshina Kannada", state: "Karnataka", country: "India" },
+      { id: "STU1004", name: "Aditi Rao", program: "M.Tech AI", city: "Surathkal", district: "Dakshina Kannada", state: "Karnataka", country: "India" },
+      { id: "STU1005", name: "Samarth Poojary", program: "B.Tech EEE", city: "Surathkal", district: "Dakshina Kannada", state: "Karnataka", country: "India" },
 
-      // District
-      { id: "STU1007", name: "Kiran Joseph", program: "B.Tech CSE", city: "Aluva", district: "Ernakulam", state: "Kerala", country: "India" },
-      { id: "STU1008", name: "Sneha George", program: "B.Tech CE", city: "Muvattupuzha", district: "Ernakulam", state: "Kerala", country: "India" },
-      { id: "STU1009", name: "Rahul Thomas", program: "MCA", city: "Perumbavoor", district: "Ernakulam", state: "Kerala", country: "India" },
-      { id: "STU1010", name: "Riya Mathew", program: "B.Tech ECE", city: "Angamaly", district: "Ernakulam", state: "Kerala", country: "India" },
-      { id: "STU1011", name: "Arjun Paul", program: "B.Tech ME", city: "Kothamangalam", district: "Ernakulam", state: "Kerala", country: "India" },
-      { id: "STU1012", name: "Tessy Augustine", program: "M.Tech Data Sci", city: "Piravom", district: "Ernakulam", state: "Kerala", country: "India" },
+      { id: "STU1007", name: "Aditya Rai", program: "B.Tech CSE", city: "Mangaluru", district: "Dakshina Kannada", state: "Karnataka", country: "India" },
+      { id: "STU1008", name: "Pranav Shenoy", program: "B.Tech CE", city: "Bantwal", district: "Dakshina Kannada", state: "Karnataka", country: "India" },
+      { id: "STU1009", name: "Sanjana Mallya", program: "MCA", city: "Puttur", district: "Dakshina Kannada", state: "Karnataka", country: "India" },
+      { id: "STU1010", name: "Kaushik Prabhu", program: "B.Tech ECE", city: "Moodabidri", district: "Dakshina Kannada", state: "Karnataka", country: "India" },
+      { id: "STU1011", name: "Tanvi Nayak", program: "B.Tech ME", city: "Belthangady", district: "Dakshina Kannada", state: "Karnataka", country: "India" },
 
-      // Within State
-      { id: "STU1013", name: "Devika Suresh", program: "B.Tech CSE", city: "Trivandrum", district: "Thiruvananthapuram", state: "Kerala", country: "India" },
-      { id: "STU1014", name: "Gautam Das", program: "B.Tech EEE", city: "Kozhikode", district: "Kozhikode", state: "Kerala", country: "India" },
-      { id: "STU1015", name: "Nikhil Raj", program: "B.Tech ME", city: "Thrissur", district: "Thrissur", state: "Kerala", country: "India" },
-      { id: "STU1016", name: "Pooja Hegde", program: "B.Arch", city: "Kottayam", district: "Kottayam", state: "Kerala", country: "India" },
-      { id: "STU1017", name: "Ashwin Mohan", program: "M.Tech ECE", city: "Palakkad", district: "Palakkad", state: "Kerala", country: "India" },
-      { id: "STU1018", name: "Aparna Sen", program: "B.Tech CSE", city: "Kannur", district: "Kannur", state: "Kerala", country: "India" },
+      { id: "STU1013", name: "Karthik V", program: "B.Tech CSE", city: "Bengaluru", district: "Bengaluru Urban", state: "Karnataka", country: "India" },
+      { id: "STU1014", name: "Sneha Murthy", program: "B.Tech EEE", city: "Mysuru", district: "Mysuru", state: "Karnataka", country: "India" },
+      { id: "STU1015", name: "Varun Pai", program: "B.Tech ME", city: "Udupi", district: "Udupi", state: "Karnataka", country: "India" },
+      { id: "STU1016", name: "Preethi Kulkarni", program: "B.Arch", city: "Hubballi", district: "Dharwad", state: "Karnataka", country: "India" },
+      { id: "STU1017", name: "Nithin Kumar", program: "M.Tech ECE", city: "Shivamogga", district: "Shivamogga", state: "Karnataka", country: "India" },
+      { id: "STU1018", name: "Spoorthi Patil", program: "B.Tech CSE", city: "Belagavi", district: "Belagavi", state: "Karnataka", country: "India" },
 
-      // Other State
-      { id: "STU1019", name: "Vikram Malhotra", program: "B.Tech CSE", city: "Bengaluru", district: "Bengaluru Urban", state: "Karnataka", country: "India" },
-      { id: "STU1020", name: "Aditi Rao", program: "B.Tech ECE", city: "Chennai", district: "Chennai", state: "Tamil Nadu", country: "India" },
-      { id: "STU1021", name: "Priya Sharma", program: "B.Tech CE", city: "Mumbai", district: "Mumbai City", state: "Maharashtra", country: "India" },
-      { id: "STU1022", name: "Kabir Mehta", program: "B.Tech ME", city: "Jaipur", district: "Jaipur", state: "Rajasthan", country: "India" },
-      { id: "STU1023", name: "Shreya Gupta", program: "MCA", city: "Delhi", district: "New Delhi", state: "Delhi", country: "India" },
-      { id: "STU1024", name: "Amitabh Sen", program: "B.Tech CSE", city: "Kolkata", district: "Kolkata", state: "West Bengal", country: "India" },
+      { id: "STU1021", name: "Aarav Sharma", program: "B.Tech CSE", city: "Mumbai", district: "Mumbai City", state: "Maharashtra", country: "India" },
+      { id: "STU1022", name: "Diya Menon", program: "B.Tech ECE", city: "Kochi", district: "Ernakulam", state: "Kerala", country: "India" },
+      { id: "STU1023", name: "Rahul Thomas", program: "B.Tech ME", city: "Chennai", district: "Chennai", state: "Tamil Nadu", country: "India" },
+      { id: "STU1024", name: "Priya Reddy", program: "MCA", city: "Hyderabad", district: "Hyderabad", state: "Telangana", country: "India" },
+      { id: "STU1025", name: "Vikram Malhotra", program: "B.Tech CSE", city: "Jaipur", district: "Jaipur", state: "Rajasthan", country: "India" },
+      { id: "STU1026", name: "Shreya Gupta", program: "B.Arch", city: "Delhi", district: "New Delhi", state: "Delhi", country: "India" },
 
-      // International
-      { id: "STU1025", name: "John Smith", program: "B.Tech CSE", city: "London", district: "Greater London", state: "England", country: "United Kingdom" },
-      { id: "STU1026", name: "Emily Watson", program: "B.Arch", city: "New York", district: "New York", state: "NY", country: "United States" },
       { id: "STU1027", name: "Tariq Al-Mansoor", program: "M.Tech AI", city: "Dubai", district: "Dubai", state: "Dubai", country: "UAE" },
-      { id: "STU1028", name: "Kenji Sato", program: "B.Tech ECE", city: "Tokyo", district: "Kanto", state: "Tokyo", country: "Japan" },
-      { id: "STU1029", name: "Sarah Jenkins", program: "B.Tech ME", city: "Sydney", district: "NSW", state: "New South Wales", country: "Australia" },
-      { id: "STU1030", name: "Mateo Garcia", program: "B.Tech CSE", city: "Madrid", district: "Madrid", state: "Madrid", country: "Spain" }
+      { id: "STU1028", name: "John Smith", program: "B.Tech CSE", city: "London", district: "Greater London", state: "England", country: "United Kingdom" },
+      { id: "STU1029", name: "Kenji Sato", program: "B.Tech ECE", city: "Tokyo", district: "Kanto", state: "Tokyo", country: "Japan" },
+      { id: "STU1030", name: "Emily Watson", program: "B.Arch", city: "New York", district: "New York", state: "NY", country: "United States" }
     ];
 
     let students = [];
@@ -285,8 +622,119 @@
     let auth = null;
     let user = null;
     let isCloudSyncActive = false;
+    let leafletMap = null;
+    let mapMarkersGroup = null;
+    let donutChartInstance = null;
+    let barChartInstance = null;
 
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'student-locality-app';
+    // User Authentication State
+    let currentUser = {
+      name: "Dr. Ramesh Rao",
+      email: "admin@kits.edu.in",
+      role: "admin" // 'admin' | 'faculty' | 'guest'
+    };
+
+    const appId = typeof window.appId !== 'undefined' ? window.appId : 'v02-student-locality-app';
+
+    function calculateDistanceKm(lat1, lon1, lat2, lon2) {
+      if (lat1 === lat2 && lon1 === lon2) return 0;
+      const R = 6371; // Earth's radius in km
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = 
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return Math.round(R * c);
+    }
+
+    function loginUser(role, email, name) {
+      currentUser = {
+        name: name || (role === 'admin' ? 'Dr. Ramesh Rao (Admin)' : role === 'faculty' ? 'Prof. Sunita Bhat' : 'Auditor / Guest'),
+        email: email || `${role}@kits.edu.in`,
+        role: role
+      };
+      
+      try { localStorage.setItem('v02_user_session', JSON.stringify(currentUser)); } catch(e){}
+      updateAuthUI();
+      applyRolePermissions();
+      showToast(`Logged in as ${currentUser.name} (${role.toUpperCase()})`);
+      closeLoginModal();
+    }
+
+    function updateAuthUI() {
+      const nameEl = document.getElementById('user-display-name');
+      const roleEl = document.getElementById('user-role-badge');
+      const btnTextEl = document.getElementById('login-btn-text');
+
+      if (nameEl) nameEl.innerText = currentUser.name;
+      if (roleEl) {
+        roleEl.innerText = currentUser.role.toUpperCase();
+        if (currentUser.role === 'admin') {
+          roleEl.className = "px-1.5 py-0.5 text-[9px] rounded uppercase font-extrabold bg-blue-500/20 text-blue-400 border border-blue-500/30";
+        } else if (currentUser.role === 'faculty') {
+          roleEl.className = "px-1.5 py-0.5 text-[9px] rounded uppercase font-extrabold bg-amber-500/20 text-amber-400 border border-amber-500/30";
+        } else {
+          roleEl.className = "px-1.5 py-0.5 text-[9px] rounded uppercase font-extrabold bg-slate-800 text-slate-400 border border-slate-700";
+        }
+      }
+      if (btnTextEl) btnTextEl.innerText = currentUser.role === 'guest' ? 'Sign In' : 'Switch Account';
+    }
+
+    function applyRolePermissions() {
+      const isGuest = currentUser.role === 'guest';
+      const isFaculty = currentUser.role === 'faculty';
+
+      // Restrict modification actions for Auditor/Guest mode
+      const submitBtn = document.getElementById('form-submit-btn');
+      const gen10Btn = document.getElementById('btn-gen-10');
+      const gen25Btn = document.getElementById('btn-gen-25');
+      const resetBtn = document.getElementById('btn-prompt-reset');
+      const syncBtn = document.getElementById('btn-sync-settings');
+
+      if (submitBtn) {
+        submitBtn.disabled = isGuest;
+        submitBtn.className = isGuest
+          ? "w-full py-2.5 bg-slate-800 text-slate-500 font-semibold rounded-lg cursor-not-allowed"
+          : "w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg shadow-sm transition";
+      }
+
+      if (gen10Btn) gen10Btn.disabled = isGuest;
+      if (gen25Btn) gen25Btn.disabled = isGuest;
+      if (resetBtn) resetBtn.style.display = isGuest ? 'none' : 'flex';
+      if (syncBtn) syncBtn.style.display = (isGuest || isFaculty) ? 'none' : 'flex';
+    }
+
+    function openLoginModal() {
+      document.getElementById('login-modal')?.classList.remove('hidden');
+    }
+
+    function closeLoginModal() {
+      document.getElementById('login-modal')?.classList.add('hidden');
+    }
+
+    function loadSavedSession() {
+      try {
+        const saved = localStorage.getItem('v02_user_session');
+        if (saved) currentUser = JSON.parse(saved);
+      } catch(e) {}
+      updateAuthUI();
+      applyRolePermissions();
+    }
+
+    function getStudentCoords(student) {
+      const cityKey = (student.city || '').trim().toLowerCase();
+      if (CITY_COORDS[cityKey]) return CITY_COORDS[cityKey];
+      
+      // Fallback coordinate generation for demo visualization based on category
+      const cat = getLocalityCategory(student);
+      if (cat === "Local") return { lat: 13.0108 + (Math.random() - 0.5) * 0.04, lng: 74.7943 + (Math.random() - 0.5) * 0.04 };
+      if (cat === "District") return { lat: 12.9141 + (Math.random() - 0.5) * 0.3, lng: 74.8560 + (Math.random() - 0.5) * 0.3 };
+      if (cat === "Within State") return { lat: 13.5 + (Math.random() - 0.5) * 3, lng: 75.5 + (Math.random() - 0.5) * 3 };
+      if (cat === "Other State") return { lat: 19.0 + (Math.random() - 0.5) * 10, lng: 77.0 + (Math.random() - 0.5) * 10 };
+      return { lat: 25.0 + (Math.random() - 0.5) * 20, lng: 55.0 + (Math.random() - 0.5) * 40 };
+    }
 
     function getLocalityCategory(student) {
       const c = (student.country || '').trim().toLowerCase();
@@ -303,12 +751,7 @@
 
     function escapeHtml(str) {
       if (!str) return '';
-      return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+      return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
     }
 
     function showToast(message, type = 'info') {
@@ -316,14 +759,11 @@
       if (!container) return;
       const toast = document.createElement('div');
       const bg = type === 'error' ? 'bg-rose-600' : 'bg-slate-800';
-      toast.className = `${bg} text-white text-xs px-4 py-2.5 rounded-xl shadow-lg transition-all transform translate-y-2 opacity-0 pointer-events-auto flex items-center gap-2`;
+      toast.className = `${bg} text-white text-xs px-4 py-2.5 rounded-xl shadow-xl transition-all transform translate-y-2 opacity-0 pointer-events-auto flex items-center gap-2 border border-slate-700`;
       toast.innerHTML = `<span>${type === 'error' ? '⚠️' : '✅'}</span> <span>${escapeHtml(message)}</span>`;
       container.appendChild(toast);
 
-      setTimeout(() => {
-        toast.classList.remove('translate-y-2', 'opacity-0');
-      }, 10);
-
+      setTimeout(() => { toast.classList.remove('translate-y-2', 'opacity-0'); }, 10);
       setTimeout(() => {
         toast.classList.add('opacity-0', 'translate-y-2');
         setTimeout(() => toast.remove(), 300);
@@ -333,16 +773,11 @@
     async function initCloudStorage() {
       try {
         let config = null;
-
-        // Priority 1: User custom config for cross-device linking
         const savedCustomConfig = localStorage.getItem(CUSTOM_CONFIG_KEY);
         if (savedCustomConfig) {
-          try {
-            config = JSON.parse(savedCustomConfig);
-          } catch(e){}
+          try { config = JSON.parse(savedCustomConfig); } catch(e){}
         }
 
-        // Priority 2: Injected platform environment config
         if (!config && typeof __firebase_config !== 'undefined') {
           config = JSON.parse(__firebase_config);
         }
@@ -365,7 +800,7 @@
           }
         }
       } catch (err) {
-        console.warn("Cloud Storage initialization fallback to Local Storage:", err);
+        console.warn("Storage fallback to LocalStorage:", err);
       }
 
       fallbackToLocalStorage();
@@ -380,15 +815,13 @@
           saveAllToCloud(DEFAULT_STUDENTS);
         } else {
           const cloudData = [];
-          snapshot.forEach(doc => {
-            cloudData.push(doc.data());
-          });
+          snapshot.forEach(doc => cloudData.push(doc.data()));
           students = cloudData;
-          updateStorageStatus(true, `☁️ Live Cross-Device Sync Active`);
+          updateStorageStatus(true, `☁️ Live Sync Active`);
           renderApp();
         }
       }, (error) => {
-        console.error("Firestore onSnapshot error:", error);
+        console.error("Firestore sync error:", error);
         fallbackToLocalStorage();
       });
     }
@@ -396,7 +829,7 @@
     function fallbackToLocalStorage() {
       isCloudSyncActive = false;
       students = loadLocalStudents();
-      updateStorageStatus(false, `📱 Local Storage Mode (Click "Cross-Device Sync" to link phone & laptop)`);
+      updateStorageStatus(false, `📱 Local Storage Mode`);
       renderApp();
     }
 
@@ -424,22 +857,11 @@
 
     async function persistStudents(updatedList) {
       students = updatedList;
-      
-      try {
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(students));
-      } catch(e) {}
+      try { localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(students)); } catch(e) {}
 
       if (isCloudSyncActive && db && user) {
-        try {
-          await saveAllToCloud(students);
-          updateStorageStatus(true, `☁️ Cross-Device Synced • (${new Date().toLocaleTimeString()})`);
-        } catch (e) {
-          console.error("Cloud persist error:", e);
-        }
-      } else {
-        updateStorageStatus(false, `📱 Local Storage Mode (${new Date().toLocaleTimeString()})`);
+        try { await saveAllToCloud(students); } catch (e) {}
       }
-      
       renderApp();
     }
 
@@ -451,34 +873,207 @@
       }
     }
 
+    function initLeafletMap() {
+      if (leafletMap) return;
+      
+      const mapContainer = document.getElementById('leaflet-map-container');
+      if (!mapContainer) return;
+
+      leafletMap = L.map('leaflet-map-container', {
+        center: [13.0108, 74.7943],
+        zoom: 6,
+        zoomControl: true
+      });
+
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap &copy; CARTO',
+        maxZoom: 18
+      }).addTo(leafletMap);
+
+      // Add Reference Campus Marker
+      const campusIcon = L.divIcon({
+        className: 'custom-campus-pin',
+        html: `<div style="background-color:#2563eb; color:white; font-weight:bold; font-size:10px; padding:4px 8px; border-radius:12px; border:2px solid white; box-shadow:0 4px 6px rgba(0,0,0,0.3);">🏫 KITS Surathkal</div>`,
+        iconSize: [110, 30],
+        iconAnchor: [55, 15]
+      });
+
+      L.marker([INST.lat, INST.lng], { icon: campusIcon })
+        .addTo(leafletMap)
+        .bindPopup(`<b>Karnataka Institute of Tech & Science (KITS)</b><br>Surathkal, Mangaluru, Karnataka<br><em>Reference Center Point</em>`);
+
+      mapMarkersGroup = L.layerGroup().addTo(leafletMap);
+      updateMapMarkers();
+    }
+
+    function updateMapMarkers() {
+      if (!leafletMap || !mapMarkersGroup) return;
+      mapMarkersGroup.clearLayers();
+
+      const colorMap = {
+        'Local': '#10b981',
+        'District': '#0284c7',
+        'Within State': '#f59e0b',
+        'Other State': '#ea580c',
+        'International': '#ec4899'
+      };
+
+      students.forEach(s => {
+        const coords = getStudentCoords(s);
+        const cat = getLocalityCategory(s);
+        const color = colorMap[cat] || '#64748b';
+        const dist = calculateDistanceKm(INST.lat, INST.lng, coords.lat, coords.lng);
+
+        const markerHtml = `<div style="background:${color}; width:12px; height:12px; border-radius:50%; border:2px solid white; box-shadow:0 2px 4px rgba(0,0,0,0.4);"></div>`;
+        const customIcon = L.divIcon({
+          className: 'student-pin',
+          html: markerHtml,
+          iconSize: [12, 12],
+          iconAnchor: [6, 6]
+        });
+
+        const popupContent = `
+          <div style="font-family:sans-serif; text-align:left; color:#0f172a;">
+            <div style="font-weight:bold; font-size:13px; color:#1e293b;">${escapeHtml(s.name)}</div>
+            <div style="font-size:11px; color:#64748b;">${escapeHtml(s.program)} • ${escapeHtml(s.id)}</div>
+            <div style="margin-top:4px; font-size:11px;">📍 ${escapeHtml(s.city)}, ${escapeHtml(s.state)}</div>
+            <div style="font-size:11px; font-weight:bold; color:${color}; margin-top:2px;">Tier: ${cat} (~${dist} km)</div>
+          </div>
+        `;
+
+        L.marker([coords.lat, coords.lng], { icon: customIcon })
+          .bindPopup(popupContent)
+          .addTo(mapMarkersGroup);
+      });
+    }
+
+    function updateCharts(counts) {
+      const donutCtx = document.getElementById('chart-locality-donut');
+      if (donutCtx) {
+        const labels = ['Local', 'District', 'Within State', 'Other State', 'International'];
+        const data = [counts.Local, counts.District, counts["Within State"], counts["Other State"], counts.International];
+
+        if (donutChartInstance) {
+          donutChartInstance.data.datasets[0].data = data;
+          donutChartInstance.update();
+        } else {
+          donutChartInstance = new Chart(donutCtx, {
+            type: 'doughnut',
+            data: {
+              labels: labels,
+              datasets: [{
+                data: data,
+                backgroundColor: ['#10b981', '#0284c7', '#f59e0b', '#ea580c', '#ec4899'],
+                borderWidth: 0
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 11 } } }
+              },
+              cutout: '65%'
+            }
+          });
+        }
+      }
+
+      const barCtx = document.getElementById('chart-states-bar');
+      if (barCtx) {
+        // Group by State
+        const stateCounts = {};
+        students.forEach(s => {
+          const st = s.state || 'Unknown';
+          stateCounts[st] = (stateCounts[st] || 0) + 1;
+        });
+
+        const sortedStates = Object.keys(stateCounts)
+          .sort((a,b) => stateCounts[b] - stateCounts[a])
+          .slice(0, 6);
+
+        const barData = sortedStates.map(st => stateCounts[st]);
+
+        if (barChartInstance) {
+          barChartInstance.data.labels = sortedStates;
+          barChartInstance.data.datasets[0].data = barData;
+          barChartInstance.update();
+        } else {
+          barChartInstance = new Chart(barCtx, {
+            type: 'bar',
+            data: {
+              labels: sortedStates,
+              datasets: [{
+                label: 'Students Count',
+                data: barData,
+                backgroundColor: '#3b82f6',
+                borderRadius: 6
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              scales: {
+                x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { display: false } },
+                y: { ticks: { color: '#94a3b8', precision: 0 }, grid: { color: '#334155' } }
+              }
+            }
+          });
+        }
+      }
+    }
+
     function renderApp() {
       const searchVal = (document.getElementById('search-input')?.value || '').toLowerCase().trim();
       const filterCat = document.getElementById('filter-category')?.value || 'All';
 
       let counts = { Local: 0, District: 0, "Within State": 0, "Other State": 0, International: 0 };
+      let distanceBands = { r25: 0, r150: 0, r800: 0, rFar: 0 };
 
       students.forEach(s => {
         const cat = getLocalityCategory(s);
         if (counts[cat] !== undefined) counts[cat]++;
+
+        const coords = getStudentCoords(s);
+        const dist = calculateDistanceKm(INST.lat, INST.lng, coords.lat, coords.lng);
+        if (dist <= 25) distanceBands.r25++;
+        else if (dist <= 150) distanceBands.r150++;
+        else if (dist <= 800) distanceBands.r800++;
+        else distanceBands.rFar++;
       });
 
       const total = students.length || 1;
       
+      document.getElementById('total-student-badge').innerText = `Total Students: ${students.length}`;
       document.getElementById('count-local').innerText = counts.Local;
-      document.getElementById('pct-local').innerText = `${Math.round((counts.Local / total) * 100)}% of total`;
+      document.getElementById('pct-local').innerText = `${Math.round((counts.Local / total) * 100)}%`;
 
       document.getElementById('count-district').innerText = counts.District;
-      document.getElementById('pct-district').innerText = `${Math.round((counts.District / total) * 100)}% of total`;
+      document.getElementById('pct-district').innerText = `${Math.round((counts.District / total) * 100)}%`;
 
       document.getElementById('count-state').innerText = counts["Within State"];
-      document.getElementById('pct-state').innerText = `${Math.round((counts["Within State"] / total) * 100)}% of total`;
+      document.getElementById('pct-state').innerText = `${Math.round((counts["Within State"] / total) * 100)}%`;
 
       document.getElementById('count-otherstate').innerText = counts["Other State"];
-      document.getElementById('pct-otherstate').innerText = `${Math.round((counts["Other State"] / total) * 100)}% of total`;
+      document.getElementById('pct-otherstate').innerText = `${Math.round((counts["Other State"] / total) * 100)}%`;
 
       document.getElementById('count-intl').innerText = counts.International;
-      document.getElementById('pct-intl').innerText = `${Math.round((counts.International / total) * 100)}% of total`;
+      document.getElementById('pct-intl').innerText = `${Math.round((counts.International / total) * 100)}%`;
 
+      document.getElementById('radius-25').innerText = distanceBands.r25;
+      document.getElementById('radius-150').innerText = distanceBands.r150;
+      document.getElementById('radius-800').innerText = distanceBands.r800;
+      document.getElementById('radius-far').innerText = distanceBands.rFar;
+
+      document.getElementById('stat-out-state-pct').innerText = `${Math.round((counts["Other State"] / total) * 100)}%`;
+      document.getElementById('stat-intl-pct').innerText = `${Math.round((counts.International / total) * 100)}%`;
+
+      updateCharts(counts);
+      updateMapMarkers();
+      renderNAACReport(counts, total);
+
+      // Render Table
       const tbody = document.getElementById('student-table-body');
       if (!tbody) return;
 
@@ -494,47 +1089,78 @@
       });
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-slate-400">No matching student records found.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-500">No matching student records found.</td></tr>`;
         return;
       }
 
       const categoryStyles = {
-        'Local': 'bg-emerald-100 text-emerald-800 border-emerald-200',
-        'District': 'bg-sky-100 text-sky-800 border-sky-200',
-        'Within State': 'bg-amber-100 text-amber-800 border-amber-200',
-        'Other State': 'bg-orange-100 text-orange-800 border-orange-200',
-        'International': 'bg-pink-100 text-pink-800 border-pink-200'
+        'Local': 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
+        'District': 'bg-sky-500/10 text-sky-400 border-sky-500/30',
+        'Within State': 'bg-amber-500/10 text-amber-400 border-amber-500/30',
+        'Other State': 'bg-orange-500/10 text-orange-400 border-orange-500/30',
+        'International': 'bg-pink-500/10 text-pink-400 border-pink-500/30'
       };
 
       tbody.innerHTML = filtered.map(s => {
         const cat = getLocalityCategory(s);
-        const badgeStyle = categoryStyles[cat] || 'bg-slate-100 text-slate-800 border-slate-200';
+        const badgeStyle = categoryStyles[cat] || 'bg-slate-800 text-slate-300 border-slate-700';
+        const coords = getStudentCoords(s);
+        const dist = calculateDistanceKm(INST.lat, INST.lng, coords.lat, coords.lng);
 
         return `
-          <tr class="hover:bg-slate-50/80 transition-colors">
+          <tr class="hover:bg-slate-800/50 transition">
             <td class="p-3">
-              <div class="font-semibold text-slate-900">${escapeHtml(s.name)}</div>
-              <div class="text-xs text-slate-400 font-mono">${escapeHtml(s.id)} • ${escapeHtml(s.program)}</div>
+              <div class="font-semibold text-slate-100">${escapeHtml(s.name)}</div>
+              <div class="text-[11px] text-slate-400 font-mono">${escapeHtml(s.id)} • ${escapeHtml(s.program)}</div>
             </td>
-            <td class="p-3 text-slate-600">
+            <td class="p-3 text-slate-300">
               <div>${escapeHtml(s.city)}, ${escapeHtml(s.district)}</div>
-              <div class="text-xs text-slate-400">${escapeHtml(s.state)}, ${escapeHtml(s.country)}</div>
+              <div class="text-[11px] text-slate-400">${escapeHtml(s.state)}, ${escapeHtml(s.country)}</div>
+            </td>
+            <td class="p-3 font-mono text-slate-300 text-[11px]">
+              ~${dist} km
             </td>
             <td class="p-3">
-              <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${badgeStyle}">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${badgeStyle}">
                 ${cat}
               </span>
             </td>
             <td class="p-3 text-right">
               <div class="flex items-center justify-end gap-1.5">
-                <button onclick="editStudent('${s.id}')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-md transition-colors">
+                <button onclick="editStudent('${s.id}')" class="px-2.5 py-1 bg-slate-700 hover:bg-slate-600 text-slate-200 text-[11px] font-medium rounded transition">
                   Edit
                 </button>
-                <button onclick="deleteStudent('${s.id}')" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-medium rounded-md transition-colors">
+                <button onclick="deleteStudent('${s.id}')" class="px-2.5 py-1 bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 border border-rose-800/50 text-[11px] font-medium rounded transition">
                   Delete
                 </button>
               </div>
             </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderNAACReport(counts, total) {
+      const tbody = document.getElementById('naac-table-body');
+      if (!tbody) return;
+
+      const rows = [
+        { tier: "Local", scope: "Surathkal Town & Immediate Vicinity", count: counts.Local, mapping: "Day Scholar Base Metric" },
+        { tier: "District", scope: "Dakshina Kannada District", count: counts.District, mapping: "Feeder District Inflow" },
+        { tier: "Within State", scope: "Karnataka State (Outside DK Dist)", count: counts["Within State"], mapping: "State Diversity Index" },
+        { tier: "Other State", scope: "Other Indian States & UTs", count: counts["Other State"], mapping: "NAAC Metric 2.1 / NIRF Outreach (POS)" },
+        { tier: "International", scope: "Outside India", count: counts.International, mapping: "NAAC Metric 2.1 / NIRF Outreach (POC)" }
+      ];
+
+      tbody.innerHTML = rows.map(r => {
+        const pct = Math.round((r.count / total) * 100);
+        return `
+          <tr class="hover:bg-slate-800/40">
+            <td class="p-3 border-r border-slate-800 font-bold text-blue-400">${r.tier}</td>
+            <td class="p-3 border-r border-slate-800 text-slate-300">${r.scope}</td>
+            <td class="p-3 border-r border-slate-800 text-center font-bold text-white">${r.count}</td>
+            <td class="p-3 border-r border-slate-800 text-center text-emerald-400 font-bold">${pct}%</td>
+            <td class="p-3 text-slate-400">${r.mapping}</td>
           </tr>
         `;
       }).join('');
@@ -552,23 +1178,20 @@
       const country = document.getElementById('country').value.trim();
 
       if (!name || !city || !district || !state || !country) {
-        showToast("Please fill in all required student address details.", "error");
+        showToast("Please fill in all required fields.", "error");
         return;
       }
 
       if (editId) {
-        // Edit existing
         const idx = students.findIndex(s => s.id === editId);
         if (idx !== -1) {
           students[idx] = { id: editId, name, program, city, district, state, country };
           showToast(`Updated record for ${name}`);
         }
       } else {
-        // Create new
         const newId = 'STU' + (Math.floor(1000 + Math.random() * 9000));
-        const newStudent = { id: newId, name, program, city, district, state, country };
-        students.unshift(newStudent);
-        showToast(`Created new student ${name} (${newId})`);
+        students.unshift({ id: newId, name, program, city, district, state, country });
+        showToast(`Created student ${name} (${newId})`);
       }
 
       cancelEdit();
@@ -588,10 +1211,12 @@
       document.getElementById('country').value = s.country;
 
       document.getElementById('form-title').innerText = `Edit Student (${s.id})`;
+      document.getElementById('form-mode-badge').innerText = "EDIT MODE";
       document.getElementById('form-submit-btn').innerText = "Update & Recalculate";
       document.getElementById('form-cancel-btn').classList.remove('hidden');
 
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      // Switch to registry tab
+      switchTab('tab-students');
     }
 
     function cancelEdit() {
@@ -600,7 +1225,8 @@
       document.getElementById('program').value = 'B.Tech CSE';
       document.getElementById('country').value = 'India';
       document.getElementById('form-title').innerText = "Add New Student Record";
-      document.getElementById('form-submit-btn').innerText = "Create & Auto-Classify";
+      document.getElementById('form-mode-badge').innerText = "NEW";
+      document.getElementById('form-submit-btn').innerText = "Create & Auto-Classify Location";
       document.getElementById('form-cancel-btn').classList.add('hidden');
     }
 
@@ -612,9 +1238,7 @@
         try {
           const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'students', id);
           await deleteDoc(docRef);
-        } catch (e) {
-          console.error("Firestore delete error:", e);
-        }
+        } catch (e) {}
       }
 
       const updated = students.filter(item => item.id !== id);
@@ -622,15 +1246,62 @@
       await persistStudents(updated);
     }
 
-    // Assign to window object so inline table row onclick buttons work seamlessly
     window.editStudent = editStudent;
     window.deleteStudent = deleteStudent;
+
+    function generateBatchStudents(count) {
+      const samplePool = [
+        { name: "Rithvik Shetty", program: "B.Tech CSE", city: "Surathkal", district: "Dakshina Kannada", state: "Karnataka", country: "India" },
+        { name: "Meera Hegde", program: "B.Arch", city: "Mangaluru", district: "Dakshina Kannada", state: "Karnataka", country: "India" },
+        { name: "Siddharth Verma", program: "B.Tech AI", city: "Bengaluru", district: "Bengaluru Urban", state: "Karnataka", country: "India" },
+        { name: "Kavya Murthy", program: "M.Tech CSE", city: "Mysuru", district: "Mysuru", state: "Karnataka", country: "India" },
+        { name: "Arjun Nair", program: "B.Tech ECE", city: "Kochi", district: "Ernakulam", state: "Kerala", country: "India" },
+        { name: "Neha Sharma", program: "B.Tech ME", city: "Mumbai", district: "Mumbai City", state: "Maharashtra", country: "India" },
+        { name: "Devansh Singh", program: "B.Tech CE", city: "Delhi", district: "New Delhi", state: "Delhi", country: "India" },
+        { name: "Fatima Al-Sayed", program: "M.Tech Data Sci", city: "Dubai", district: "Dubai", state: "Dubai", country: "UAE" }
+      ];
+
+      const newBatch = [];
+      for (let i = 0; i < count; i++) {
+        const item = samplePool[Math.floor(Math.random() * samplePool.length)];
+        const newId = 'STU' + (Math.floor(1000 + Math.random() * 9000));
+        newBatch.push({ ...item, id: newId, name: `${item.name} ${i+1}` });
+      }
+
+      students = [...newBatch, ...students];
+      persistStudents(students);
+      showToast(`Added ${count} sample student records!`);
+    }
+
+    function switchTab(targetTabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.nav-tab').forEach(el => {
+        el.classList.remove('border-blue-500', 'text-blue-400');
+        el.classList.add('border-transparent', 'text-slate-400');
+      });
+
+      const activeTabEl = document.getElementById(targetTabId);
+      if (activeTabEl) activeTabEl.classList.remove('hidden');
+
+      const btn = document.querySelector(`[data-tab="${targetTabId}"]`);
+      if (btn) {
+        btn.classList.remove('border-transparent', 'text-slate-400');
+        btn.classList.add('border-blue-500', 'text-blue-400');
+      }
+
+      if (targetTabId === 'tab-map') {
+        setTimeout(() => {
+          initLeafletMap();
+          if (leafletMap) leafletMap.invalidateSize();
+        }, 100);
+      }
+    }
 
     function exportData() {
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(students, null, 2));
       const downloadAnchor = document.createElement('a');
       downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `students_locality_data_${new Date().toISOString().slice(0, 10)}.json`);
+      downloadAnchor.setAttribute("download", `KITS_student_locality_data_${new Date().toISOString().slice(0, 10)}.json`);
       document.body.appendChild(downloadAnchor);
       downloadAnchor.click();
       downloadAnchor.remove();
@@ -649,7 +1320,7 @@
             await persistStudents(parsed);
             showToast(`Successfully imported ${parsed.length} student records!`);
           } else {
-            showToast("Invalid JSON file format. Must be an array of students.", "error");
+            showToast("Invalid JSON file format. Must be an array.", "error");
           }
         } catch (err) {
           showToast("Failed to parse imported JSON file.", "error");
@@ -659,13 +1330,11 @@
     }
 
     function promptReset() {
-      const modal = document.getElementById('reset-modal');
-      if (modal) modal.classList.remove('hidden');
+      document.getElementById('reset-modal')?.classList.remove('hidden');
     }
 
     function closeResetModal() {
-      const modal = document.getElementById('reset-modal');
-      if (modal) modal.classList.add('hidden');
+      document.getElementById('reset-modal')?.classList.add('hidden');
     }
 
     async function confirmResetDemoData() {
@@ -684,8 +1353,7 @@
     }
 
     function closeSyncModal() {
-      const modal = document.getElementById('sync-modal');
-      if (modal) modal.classList.add('hidden');
+      document.getElementById('sync-modal')?.classList.add('hidden');
     }
 
     function saveCustomSyncConfig() {
@@ -718,15 +1386,70 @@
 
     function clearCustomSyncConfig() {
       localStorage.removeItem(CUSTOM_CONFIG_KEY);
-      const textarea = document.getElementById('sync-config-input');
-      if (textarea) textarea.value = '';
       showToast("Cleared custom config. Reloading...");
       closeSyncModal();
       setTimeout(() => window.location.reload(), 800);
     }
 
+    function copyNAACTable() {
+      const table = document.getElementById('naac-report-table');
+      if (!table) return;
+      const range = document.createRange();
+      range.selectNode(table);
+      window.getSelection().removeAllRanges();
+      window.getSelection().addRange(range);
+      try {
+        document.execCommand('copy');
+        showToast("Copied NAAC / NIRF Table to clipboard!");
+      } catch (err) {
+        showToast("Failed to copy table automatically.", "error");
+      }
+      window.getSelection().removeAllRanges();
+    }
+
     document.addEventListener('DOMContentLoaded', async function() {
       await initCloudStorage();
+      loadSavedSession();
+
+      // Navigation tabs
+      document.querySelectorAll('.nav-tab').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const tabId = e.currentTarget.getAttribute('data-tab');
+          switchTab(tabId);
+        });
+      });
+
+      // Authentication modal listeners
+      document.getElementById('btn-open-login')?.addEventListener('click', openLoginModal);
+      document.getElementById('btn-login-close')?.addEventListener('click', closeLoginModal);
+      
+      document.querySelectorAll('.role-preset-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const role = e.currentTarget.getAttribute('data-role');
+          document.getElementById('login-selected-role').value = role;
+
+          document.querySelectorAll('.role-preset-btn').forEach(b => {
+            b.className = "role-preset-btn p-2.5 rounded-xl border border-slate-800 bg-slate-950/60 text-slate-400 hover:border-slate-700 text-center transition flex flex-col items-center gap-1";
+          });
+          e.currentTarget.className = "role-preset-btn p-2.5 rounded-xl border border-blue-500 bg-blue-500/10 text-blue-400 text-center transition flex flex-col items-center gap-1";
+
+          const emailInput = document.getElementById('login-email');
+          if (emailInput) emailInput.value = `${role}@kits.edu.in`;
+        });
+      });
+
+      document.getElementById('btn-demo-credentials')?.addEventListener('click', () => {
+        document.getElementById('login-email').value = "admin@kits.edu.in";
+        document.getElementById('login-password').value = "kits2026";
+        showToast("Auto-filled demo credentials");
+      });
+
+      document.getElementById('login-form')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const role = document.getElementById('login-selected-role').value || 'admin';
+        const email = document.getElementById('login-email').value.trim();
+        loginUser(role, email);
+      });
 
       document.getElementById('student-form').addEventListener('submit', handleFormSubmit);
       document.getElementById('form-cancel-btn').addEventListener('click', cancelEdit);
@@ -741,6 +1464,10 @@
       document.getElementById('btn-prompt-reset').addEventListener('click', promptReset);
       document.getElementById('btn-modal-cancel').addEventListener('click', closeResetModal);
       document.getElementById('btn-modal-confirm').addEventListener('click', confirmResetDemoData);
+
+      document.getElementById('btn-gen-10').addEventListener('click', () => generateBatchStudents(10));
+      document.getElementById('btn-gen-25').addEventListener('click', () => generateBatchStudents(25));
+      document.getElementById('btn-copy-report').addEventListener('click', copyNAACTable);
 
       // Sync settings modal bindings
       document.getElementById('btn-sync-settings').addEventListener('click', openSyncModal);
