@@ -30,6 +30,9 @@
       </div>
       
       <div class="flex flex-wrap items-center gap-2">
+        <button id="btn-sync-settings" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5 shadow-sm">
+          <span>📲</span> Cross-Device Sync
+        </button>
         <button id="btn-export" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded-lg transition-colors border border-slate-700 flex items-center gap-1.5">
           <span>📥</span> Export JSON
         </button>
@@ -176,6 +179,44 @@
   <!-- TOAST NOTIFICATION CONTAINER -->
   <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
+  <!-- CROSS-DEVICE SYNC MODAL -->
+  <div id="sync-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl border border-slate-100 space-y-4">
+      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+        <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+          <span>📲</span> Connect Phone & Laptop Live
+        </h3>
+        <button id="btn-sync-close" class="text-slate-400 hover:text-slate-600 font-bold text-lg">&times;</button>
+      </div>
+
+      <p class="text-xs text-slate-600 leading-relaxed">
+        To sync student edits automatically between your phone and laptop, paste your database connection config below. Once saved, any record created or edited on your phone will reflect instantly on your laptop!
+      </p>
+
+      <div>
+        <label class="block text-xs font-semibold text-slate-700 mb-1">Database Config (JSON)</label>
+        <textarea id="sync-config-input" rows="5" placeholder='{
+  "apiKey": "...",
+  "authDomain": "...",
+  "projectId": "...",
+  "storageBucket": "...",
+  "messagingSenderId": "...",
+  "appId": "..."
+}' class="w-full p-2.5 text-xs font-mono bg-slate-50 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 outline-none"></textarea>
+      </div>
+
+      <div class="flex items-center justify-between pt-2">
+        <button id="btn-clear-sync" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition-colors">
+          Reset to Default
+        </button>
+        <div class="flex gap-2">
+          <button id="btn-sync-modal-cancel" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-semibold rounded-lg transition-colors">Cancel</button>
+          <button id="btn-save-sync" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg transition-colors">Save & Link</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- CUSTOM CONFIRMATION MODAL -->
   <div id="reset-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl border border-slate-100 space-y-4">
@@ -195,6 +236,7 @@
 
     const INST = { city: "Kochi", district: "Ernakulam", state: "Kerala", country: "India" };
     const LOCAL_STORAGE_KEY = 'v02_locality_students_cloud_v1';
+    const CUSTOM_CONFIG_KEY = 'v02_custom_firebase_config';
 
     const DEFAULT_STUDENTS = [
       // Local
@@ -246,18 +288,74 @@
 
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'student-locality-app';
 
+    function getLocalityCategory(student) {
+      const c = (student.country || '').trim().toLowerCase();
+      const s = (student.state || '').trim().toLowerCase();
+      const d = (student.district || '').trim().toLowerCase();
+      const ci = (student.city || '').trim().toLowerCase();
+
+      if (c !== INST.country.toLowerCase()) return "International";
+      if (s !== INST.state.toLowerCase()) return "Other State";
+      if (d !== INST.district.toLowerCase()) return "Within State";
+      if (ci !== INST.city.toLowerCase()) return "District";
+      return "Local";
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+      const toast = document.createElement('div');
+      const bg = type === 'error' ? 'bg-rose-600' : 'bg-slate-800';
+      toast.className = `${bg} text-white text-xs px-4 py-2.5 rounded-xl shadow-lg transition-all transform translate-y-2 opacity-0 pointer-events-auto flex items-center gap-2`;
+      toast.innerHTML = `<span>${type === 'error' ? '⚠️' : '✅'}</span> <span>${escapeHtml(message)}</span>`;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      }, 10);
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
     async function initCloudStorage() {
       try {
-        if (typeof __firebase_config !== 'undefined') {
-          const config = JSON.parse(__firebase_config);
+        let config = null;
+
+        // Priority 1: User custom config for cross-device linking
+        const savedCustomConfig = localStorage.getItem(CUSTOM_CONFIG_KEY);
+        if (savedCustomConfig) {
+          try {
+            config = JSON.parse(savedCustomConfig);
+          } catch(e){}
+        }
+
+        // Priority 2: Injected platform environment config
+        if (!config && typeof __firebase_config !== 'undefined') {
+          config = JSON.parse(__firebase_config);
+        }
+
+        if (config) {
           const app = initializeApp(config);
           auth = getAuth(app);
           db = getFirestore(app);
 
           if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-            user = (await signInWithCustomToken(auth, __initial_auth_token)).user;
-          } else {
             user = (await signInWithCustomToken(auth, __initial_auth_token).catch(() => signInAnonymously(auth))).user;
+          } else {
+            user = (await signInAnonymously(auth)).user;
           }
 
           if (user) {
@@ -270,16 +368,15 @@
         console.warn("Cloud Storage initialization fallback to Local Storage:", err);
       }
 
-      // Local storage fallback
       fallbackToLocalStorage();
     }
 
     function setupRealtimeSync() {
+      if (!db || !user) return;
       const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'students');
       
       onSnapshot(colRef, (snapshot) => {
         if (snapshot.empty) {
-          // Seed cloud database if empty
           saveAllToCloud(DEFAULT_STUDENTS);
         } else {
           const cloudData = [];
@@ -287,7 +384,7 @@
             cloudData.push(doc.data());
           });
           students = cloudData;
-          updateStorageStatus(true, `☁️ Cloud Sync Active • Live Persistent Database`);
+          updateStorageStatus(true, `☁️ Live Cross-Device Sync Active`);
           renderApp();
         }
       }, (error) => {
@@ -299,7 +396,7 @@
     function fallbackToLocalStorage() {
       isCloudSyncActive = false;
       students = loadLocalStudents();
-      updateStorageStatus(false, `💾 Saved to Browser Storage (${new Date().toLocaleTimeString()})`);
+      updateStorageStatus(false, `📱 Local Storage Mode (Click "Cross-Device Sync" to link phone & laptop)`);
       renderApp();
     }
 
@@ -310,7 +407,7 @@
       if (pingEl) {
         pingEl.className = isCloud 
           ? "h-2 w-2 rounded-full bg-emerald-400 animate-pulse" 
-          : "h-2 w-2 rounded-full bg-sky-400";
+          : "h-2 w-2 rounded-full bg-amber-400";
       }
     }
 
@@ -328,7 +425,6 @@
     async function persistStudents(updatedList) {
       students = updatedList;
       
-      // Always save copy to LocalStorage as double protection
       try {
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(students));
       } catch(e) {}
@@ -336,12 +432,12 @@
       if (isCloudSyncActive && db && user) {
         try {
           await saveAllToCloud(students);
-          updateStorageStatus(true, `☁️ Cloud Synced • (${new Date().toLocaleTimeString()})`);
+          updateStorageStatus(true, `☁️ Cross-Device Synced • (${new Date().toLocaleTimeString()})`);
         } catch (e) {
           console.error("Cloud persist error:", e);
         }
       } else {
-        updateStorageStatus(false, `💾 Saved to Browser Storage (${new Date().toLocaleTimeString()})`);
+        updateStorageStatus(false, `📱 Local Storage Mode (${new Date().toLocaleTimeString()})`);
       }
       
       renderApp();
@@ -355,89 +451,54 @@
       }
     }
 
-    function escapeHtml(str) {
-      if (!str) return '';
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-    }
-
-    function deriveLocality(address) {
-      const norm = (str) => (str || '').trim().toLowerCase();
-      const sameCountry = norm(address.country) === norm(INST.country);
-      const sameState = norm(address.state) === norm(INST.state);
-      const sameDistrict = norm(address.district) === norm(INST.district);
-      const sameCity = norm(address.city) === norm(INST.city);
-
-      if (!sameCountry) return "International";
-      if (!sameState) return "Other State";
-      if (!sameDistrict) return "Within State";
-      if (!sameCity) return "District";
-      return "Local";
-    }
-
-    function showToast(message, type = 'success') {
-      const container = document.getElementById('toast-container');
-      if (!container) return;
-      const toast = document.createElement('div');
-      const bg = type === 'success' ? 'bg-emerald-800 text-emerald-100 border-emerald-700' : 'bg-rose-800 text-rose-100 border-rose-700';
-      toast.className = `px-4 py-2.5 rounded-xl border ${bg} text-xs font-semibold shadow-lg transition-all duration-300 transform translate-y-2 pointer-events-auto`;
-      toast.innerText = message;
-      container.appendChild(toast);
-      setTimeout(() => {
-        toast.classList.add('opacity-0', 'translate-y-4');
-        setTimeout(() => toast.remove(), 300);
-      }, 3000);
-    }
-
     function renderApp() {
-      const enriched = students.map(s => ({ ...s, category: deriveLocality(s) }));
+      const searchVal = (document.getElementById('search-input')?.value || '').toLowerCase().trim();
+      const filterCat = document.getElementById('filter-category')?.value || 'All';
 
-      const total = enriched.length;
-      const counts = { Local: 0, District: 0, "Within State": 0, "Other State": 0, International: 0 };
-      enriched.forEach(s => {
-        if (counts[s.category] !== undefined) counts[s.category]++;
+      let counts = { Local: 0, District: 0, "Within State": 0, "Other State": 0, International: 0 };
+
+      students.forEach(s => {
+        const cat = getLocalityCategory(s);
+        if (counts[cat] !== undefined) counts[cat]++;
       });
 
-      const getPct = (cnt) => total > 0 ? ((cnt / total) * 100).toFixed(1) + '%' : '0%';
+      const total = students.length || 1;
+      
+      document.getElementById('count-local').innerText = counts.Local;
+      document.getElementById('pct-local').innerText = `${Math.round((counts.Local / total) * 100)}% of total`;
 
-      const setElText = (id, txt) => {
-        const el = document.getElementById(id);
-        if (el) el.innerText = txt;
-      };
+      document.getElementById('count-district').innerText = counts.District;
+      document.getElementById('pct-district').innerText = `${Math.round((counts.District / total) * 100)}% of total`;
 
-      setElText('count-local', counts.Local);
-      setElText('pct-local', getPct(counts.Local) + ' of total');
+      document.getElementById('count-state').innerText = counts["Within State"];
+      document.getElementById('pct-state').innerText = `${Math.round((counts["Within State"] / total) * 100)}% of total`;
 
-      setElText('count-district', counts.District);
-      setElText('pct-district', getPct(counts.District) + ' of total');
+      document.getElementById('count-otherstate').innerText = counts["Other State"];
+      document.getElementById('pct-otherstate').innerText = `${Math.round((counts["Other State"] / total) * 100)}% of total`;
 
-      setElText('count-state', counts["Within State"]);
-      setElText('pct-state', getPct(counts["Within State"]) + ' of total');
+      document.getElementById('count-intl').innerText = counts.International;
+      document.getElementById('pct-intl').innerText = `${Math.round((counts.International / total) * 100)}% of total`;
 
-      setElText('count-otherstate', counts["Other State"]);
-      setElText('pct-otherstate', getPct(counts["Other State"]) + ' of total');
+      const tbody = document.getElementById('student-table-body');
+      if (!tbody) return;
 
-      setElText('count-intl', counts.International);
-      setElText('pct-intl', getPct(counts.International) + ' of total');
-
-      const searchEl = document.getElementById('search-input');
-      const search = searchEl ? searchEl.value.toLowerCase().trim() : '';
-      const filterEl = document.getElementById('filter-category');
-      const filter = filterEl ? filterEl.value : 'All';
-
-      const filtered = enriched.filter(s => {
-        const matchesSearch = s.name.toLowerCase().includes(search) || 
-                              s.id.toLowerCase().includes(search) || 
-                              s.city.toLowerCase().includes(search);
-        const matchesCat = filter === 'All' || s.category === filter;
-        return matchesSearch && matchesCat;
+      const filtered = students.filter(s => {
+        const cat = getLocalityCategory(s);
+        const matchesCategory = filterCat === 'All' || cat === filterCat;
+        const matchesSearch = !searchVal || 
+          s.name.toLowerCase().includes(searchVal) ||
+          s.id.toLowerCase().includes(searchVal) ||
+          s.city.toLowerCase().includes(searchVal) ||
+          s.district.toLowerCase().includes(searchVal);
+        return matchesCategory && matchesSearch;
       });
 
-      const badgeStyles = {
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-slate-400">No matching student records found.</td></tr>`;
+        return;
+      }
+
+      const categoryStyles = {
         'Local': 'bg-emerald-100 text-emerald-800 border-emerald-200',
         'District': 'bg-sky-100 text-sky-800 border-sky-200',
         'Within State': 'bg-amber-100 text-amber-800 border-amber-200',
@@ -445,55 +506,44 @@
         'International': 'bg-pink-100 text-pink-800 border-pink-200'
       };
 
-      const tbody = document.getElementById('student-table-body');
-      if (!tbody) return;
+      tbody.innerHTML = filtered.map(s => {
+        const cat = getLocalityCategory(s);
+        const badgeStyle = categoryStyles[cat] || 'bg-slate-100 text-slate-800 border-slate-200';
 
-      if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-400 font-medium">No student records found matching filter.</td></tr>`;
-        return;
-      }
-
-      tbody.innerHTML = filtered.map(s => `
-        <tr class="hover:bg-slate-50 transition-colors">
-          <td class="p-3">
-            <div class="font-bold text-slate-900">${escapeHtml(s.name)}</div>
-            <div class="text-xs text-slate-500">${escapeHtml(s.id)} • ${escapeHtml(s.program)}</div>
-          </td>
-          <td class="p-3">
-            <div class="text-slate-800">${escapeHtml(s.city)}, ${escapeHtml(s.district)}</div>
-            <div class="text-xs text-slate-500">${escapeHtml(s.state)}, ${escapeHtml(s.country)}</div>
-          </td>
-          <td class="p-3">
-            <span class="px-2.5 py-1 rounded-full text-xs font-bold border ${badgeStyles[s.category] || 'bg-slate-100 text-slate-700'}">
-              ${escapeHtml(s.category)}
-            </span>
-          </td>
-          <td class="p-3 text-right">
-            <div class="flex items-center justify-end gap-1.5">
-              <button data-action="edit" data-id="${escapeHtml(s.id)}" class="btn-edit px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-md border border-slate-300 transition-colors">
-                Edit
-              </button>
-              <button data-action="delete" data-id="${escapeHtml(s.id)}" class="btn-delete px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-medium rounded-md border border-rose-200 transition-colors">
-                Delete
-              </button>
-            </div>
-          </td>
-        </tr>
-      `).join('');
-
-      // Wire row edit/delete button listeners
-      document.querySelectorAll('.btn-edit').forEach(btn => {
-        btn.onclick = () => editStudent(btn.getAttribute('data-id'));
-      });
-      document.querySelectorAll('.btn-delete').forEach(btn => {
-        btn.onclick = () => deleteStudent(btn.getAttribute('data-id'));
-      });
+        return `
+          <tr class="hover:bg-slate-50/80 transition-colors">
+            <td class="p-3">
+              <div class="font-semibold text-slate-900">${escapeHtml(s.name)}</div>
+              <div class="text-xs text-slate-400 font-mono">${escapeHtml(s.id)} • ${escapeHtml(s.program)}</div>
+            </td>
+            <td class="p-3 text-slate-600">
+              <div>${escapeHtml(s.city)}, ${escapeHtml(s.district)}</div>
+              <div class="text-xs text-slate-400">${escapeHtml(s.state)}, ${escapeHtml(s.country)}</div>
+            </td>
+            <td class="p-3">
+              <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${badgeStyle}">
+                ${cat}
+              </span>
+            </td>
+            <td class="p-3 text-right">
+              <div class="flex items-center justify-end gap-1.5">
+                <button onclick="editStudent('${s.id}')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-md transition-colors">
+                  Edit
+                </button>
+                <button onclick="deleteStudent('${s.id}')" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-medium rounded-md transition-colors">
+                  Delete
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
     }
 
     async function handleFormSubmit(e) {
-      if (e) e.preventDefault();
-      
-      const editId = document.getElementById('edit-id').value;
+      e.preventDefault();
+
+      const editId = document.getElementById('edit-id').value.trim();
       const name = document.getElementById('name').value.trim();
       const program = document.getElementById('program').value.trim();
       const city = document.getElementById('city').value.trim();
@@ -501,22 +551,28 @@
       const state = document.getElementById('state').value.trim();
       const country = document.getElementById('country').value.trim();
 
-      const updated = [...students];
-
-      if (editId) {
-        const idx = updated.findIndex(s => s.id === editId);
-        if (idx !== -1) {
-          updated[idx] = { id: editId, name, program, city, district, state, country };
-          showToast(`Record updated for ${name}`);
-        }
-      } else {
-        const newId = `STU${1000 + updated.length + 1}`;
-        updated.unshift({ id: newId, name, program, city, district, state, country });
-        showToast(`Created student ${name} (${newId})`);
+      if (!name || !city || !district || !state || !country) {
+        showToast("Please fill in all required student address details.", "error");
+        return;
       }
 
-      await persistStudents(updated);
+      if (editId) {
+        // Edit existing
+        const idx = students.findIndex(s => s.id === editId);
+        if (idx !== -1) {
+          students[idx] = { id: editId, name, program, city, district, state, country };
+          showToast(`Updated record for ${name}`);
+        }
+      } else {
+        // Create new
+        const newId = 'STU' + (Math.floor(1000 + Math.random() * 9000));
+        const newStudent = { id: newId, name, program, city, district, state, country };
+        students.unshift(newStudent);
+        showToast(`Created new student ${name} (${newId})`);
+      }
+
       cancelEdit();
+      await persistStudents(students);
     }
 
     function editStudent(id) {
@@ -531,83 +587,142 @@
       document.getElementById('state').value = s.state;
       document.getElementById('country').value = s.country;
 
-      document.getElementById('form-title').innerText = `Edit Address: ${s.id}`;
-      document.getElementById('form-submit-btn').innerText = 'Update & Recalculate';
+      document.getElementById('form-title').innerText = `Edit Student (${s.id})`;
+      document.getElementById('form-submit-btn').innerText = "Update & Recalculate";
       document.getElementById('form-cancel-btn').classList.remove('hidden');
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function cancelEdit() {
+      document.getElementById('student-form').reset();
+      document.getElementById('edit-id').value = '';
+      document.getElementById('program').value = 'B.Tech CSE';
+      document.getElementById('country').value = 'India';
+      document.getElementById('form-title').innerText = "Add New Student Record";
+      document.getElementById('form-submit-btn').innerText = "Create & Auto-Classify";
+      document.getElementById('form-cancel-btn').classList.add('hidden');
     }
 
     async function deleteStudent(id) {
       const s = students.find(item => item.id === id);
-      const studentName = s ? s.name : id;
-      const updated = students.filter(item => item.id !== id);
-      
+      const name = s ? s.name : 'Student';
+
       if (isCloudSyncActive && db && user) {
         try {
-          await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'students', id));
-        } catch(e){}
+          const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'students', id);
+          await deleteDoc(docRef);
+        } catch (e) {
+          console.error("Firestore delete error:", e);
+        }
       }
 
-      showToast(`Deleted ${studentName}`);
+      const updated = students.filter(item => item.id !== id);
+      showToast(`Deleted ${name}`);
       await persistStudents(updated);
     }
 
-    function cancelEdit() {
-      document.getElementById('edit-id').value = '';
-      const form = document.getElementById('student-form');
-      if (form) form.reset();
-      document.getElementById('program').value = 'B.Tech CSE';
-      document.getElementById('country').value = 'India';
-      document.getElementById('form-title').innerText = 'Add New Student Record';
-      document.getElementById('form-submit-btn').innerText = 'Create & Auto-Classify';
-      document.getElementById('form-cancel-btn').classList.add('hidden');
+    // Assign to window object so inline table row onclick buttons work seamlessly
+    window.editStudent = editStudent;
+    window.deleteStudent = deleteStudent;
+
+    function exportData() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(students, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `students_locality_data_${new Date().toISOString().slice(0, 10)}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      showToast("Exported student database JSON!");
+    }
+
+    function importData(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async function(evt) {
+        try {
+          const parsed = JSON.parse(evt.target.result);
+          if (Array.isArray(parsed)) {
+            await persistStudents(parsed);
+            showToast(`Successfully imported ${parsed.length} student records!`);
+          } else {
+            showToast("Invalid JSON file format. Must be an array of students.", "error");
+          }
+        } catch (err) {
+          showToast("Failed to parse imported JSON file.", "error");
+        }
+      };
+      reader.readAsText(file);
     }
 
     function promptReset() {
-      document.getElementById('reset-modal').classList.remove('hidden');
+      const modal = document.getElementById('reset-modal');
+      if (modal) modal.classList.remove('hidden');
     }
 
     function closeResetModal() {
-      document.getElementById('reset-modal').classList.add('hidden');
+      const modal = document.getElementById('reset-modal');
+      if (modal) modal.classList.add('hidden');
     }
 
     async function confirmResetDemoData() {
       closeResetModal();
       const freshDefaults = JSON.parse(JSON.stringify(DEFAULT_STUDENTS));
       await persistStudents(freshDefaults);
-      cancelEdit();
-      showToast("Demo dataset restored to clean baseline.");
+      showToast("Reset demo dataset back to 30 default students.");
     }
 
-    function exportData() {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(students, null, 2));
-      const downloadAnchor = document.createElement('a');
-      downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `student_locality_data_${Date.now()}.json`);
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      downloadAnchor.remove();
-      showToast("JSON file exported successfully.");
+    function openSyncModal() {
+      const modal = document.getElementById('sync-modal');
+      const textarea = document.getElementById('sync-config-input');
+      const saved = localStorage.getItem(CUSTOM_CONFIG_KEY);
+      if (saved && textarea) textarea.value = saved;
+      if (modal) modal.classList.remove('hidden');
     }
 
-    function importData(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = async function(e) {
-        try {
-          const imported = JSON.parse(e.target.result);
-          if (Array.isArray(imported) && imported.length > 0) {
-            await persistStudents(imported);
-            cancelEdit();
-            showToast("JSON data imported successfully.");
-          } else {
-            showToast("Invalid JSON: Expected non-empty array.", "error");
-          }
-        } catch(err) {
-          showToast("Failed to parse JSON file.", "error");
+    function closeSyncModal() {
+      const modal = document.getElementById('sync-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function saveCustomSyncConfig() {
+      const textarea = document.getElementById('sync-config-input');
+      if (!textarea) return;
+      const raw = textarea.value.trim();
+      
+      if (!raw) {
+        localStorage.removeItem(CUSTOM_CONFIG_KEY);
+        showToast("Reset sync config to default.");
+        closeSyncModal();
+        window.location.reload();
+        return;
+      }
+
+      try {
+        const parsed = JSON.parse(raw);
+        if (parsed.apiKey && parsed.projectId) {
+          localStorage.setItem(CUSTOM_CONFIG_KEY, JSON.stringify(parsed));
+          showToast("Custom database connected! Reloading...");
+          closeSyncModal();
+          setTimeout(() => window.location.reload(), 1000);
+        } else {
+          showToast("Invalid Config: Must contain 'apiKey' and 'projectId'", "error");
         }
-      };
-      reader.readAsText(file);
+      } catch (e) {
+        showToast("Invalid JSON syntax in config.", "error");
+      }
+    }
+
+    function clearCustomSyncConfig() {
+      localStorage.removeItem(CUSTOM_CONFIG_KEY);
+      const textarea = document.getElementById('sync-config-input');
+      if (textarea) textarea.value = '';
+      showToast("Cleared custom config. Reloading...");
+      closeSyncModal();
+      setTimeout(() => window.location.reload(), 800);
     }
 
     document.addEventListener('DOMContentLoaded', async function() {
@@ -626,6 +741,13 @@
       document.getElementById('btn-prompt-reset').addEventListener('click', promptReset);
       document.getElementById('btn-modal-cancel').addEventListener('click', closeResetModal);
       document.getElementById('btn-modal-confirm').addEventListener('click', confirmResetDemoData);
+
+      // Sync settings modal bindings
+      document.getElementById('btn-sync-settings').addEventListener('click', openSyncModal);
+      document.getElementById('btn-sync-close').addEventListener('click', closeSyncModal);
+      document.getElementById('btn-sync-modal-cancel').addEventListener('click', closeSyncModal);
+      document.getElementById('btn-save-sync').addEventListener('click', saveCustomSyncConfig);
+      document.getElementById('btn-clear-sync').addEventListener('click', clearCustomSyncConfig);
     });
   </script>
 </body>
