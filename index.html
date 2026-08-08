@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>V02 — Student Locality & Geographic Dashboard</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, -apple-system, sans-serif; background-color: #f8fafc; color: #0f172a; margin: 0; padding: 24px; }
+    .header { background: #1e293b; color: #ffffff; padding: 20px; border-radius: 12px; margin-bottom: 24px; }
+    .header h1 { margin: 0 0 8px 0; font-size: 22px; }
+    .header p { margin: 0; opacity: 0.85; font-size: 14px; }
+    
+    .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .card-label { font-size: 11px; color: #64748b; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
+    .card-value { font-size: 28px; font-weight: bold; color: #0f172a; margin: 8px 0; }
+    .card-subtext { font-size: 12px; color: #0284c7; }
+
+    .main-layout { display: grid; grid-template-columns: 320px 1fr; gap: 24px; }
+    @media (max-width: 900px) { .main-layout { grid-template-columns: 1fr; } }
+
+    .panel { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; height: fit-content; }
+    .panel h3 { margin-top: 0; margin-bottom: 16px; font-size: 16px; color: #334155; }
+
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px; color: #475569; }
+    .form-group input, .form-group select { width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 13px; outline: none; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+    .btn-primary { width: 100%; background: #2563eb; color: #ffffff; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-cancel { width: 100%; background: #64748b; color: #ffffff; border: none; padding: 8px; border-radius: 6px; margin-top: 8px; cursor: pointer; font-size: 13px; }
+
+    .controls-row { display: flex; gap: 12px; margin-bottom: 16px; }
+    .controls-row input { flex: 1; padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 13px; }
+    .controls-row select { padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 13px; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
+    th { padding: 10px; border-bottom: 2px solid #e2e8f0; background: #f8fafc; color: #475569; }
+    td { padding: 10px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+
+    .badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; display: inline-block; }
+    .badge-Local { background: #d1fae5; color: #065f46; }
+    .badge-District { background: #e0f2fe; color: #075985; }
+    .badge-Within-State { background: #fef3c7; color: #92400e; }
+    .badge-Other-State { background: #ffedd5; color: #9a3412; }
+    .badge-International { background: #fce7f3; color: #9d174d; }
+
+    .btn-edit { background: #f1f5f9; border: 1px solid #cbd5e1; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; color: #334155; }
+    .btn-edit:hover { background: #e2e8f0; }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <div class="header">
+    <h1>V02 — Student Locality & Geographic Dashboard</h1>
+    <p><strong>Reference Campus:</strong> National Institute of Technology | Kochi, Ernakulam Dist, Kerala, India</p>
+  </div>
+
+  <!-- ACCREDITATION DASHBOARD -->
+  <div class="dashboard-grid">
+    <div class="card">
+      <div class="card-label">Local</div>
+      <div class="card-value" id="count-local">0</div>
+      <div class="card-subtext" id="pct-local">0% of total</div>
+    </div>
+    <div class="card">
+      <div class="card-label">District</div>
+      <div class="card-value" id="count-district">0</div>
+      <div class="card-subtext" id="pct-district">0% of total</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Within State</div>
+      <div class="card-value" id="count-state">0</div>
+      <div class="card-subtext" id="pct-state">0% of total</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Other State</div>
+      <div class="card-value" id="count-otherstate">0</div>
+      <div class="card-subtext" id="pct-otherstate">0% of total</div>
+    </div>
+    <div class="card">
+      <div class="card-label">International</div>
+      <div class="card-value" id="count-intl">0</div>
+      <div class="card-subtext" id="pct-intl">0% of total</div>
+    </div>
+  </div>
+
+  <!-- MAIN WORKFLOW AREA -->
+  <div class="main-layout">
+    
+    <!-- LEFT PANEL: FORM -->
+    <div class="panel">
+      <h3 id="form-title">Add New Student Record</h3>
+      <form id="student-form">
+        <input type="hidden" id="edit-id" value="">
+        
+        <div class="form-group">
+          <label for="name">Full Name</label>
+          <input type="text" id="name" required placeholder="e.g. John Doe">
+        </div>
+
+        <div class="form-group">
+          <label for="program">Program</label>
+          <input type="text" id="program" required value="B.Tech CSE">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="city">City</label>
+            <input type="text" id="city" required placeholder="Kochi">
+          </div>
+          <div class="form-group">
+            <label for="district">District</label>
+            <input type="text" id="district" required placeholder="Ernakulam">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="state">State</label>
+            <input type="text" id="state" required placeholder="Kerala">
+          </div>
+          <div class="form-group">
+            <label for="country">Country</label>
+            <input type="text" id="country" required value="India">
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary" id="form-submit-btn">Create & Auto-Classify</button>
+        <button type="button" class="btn-cancel" id="form-cancel-btn" style="display: none;" onclick="cancelEdit()">Cancel Edit</button>
+      </form>
+    </div>
+
+    <!-- RIGHT PANEL: SEARCH, FILTER & TABLE -->
+    <div class="panel">
+      <div class="controls-row">
+        <input type="text" id="search-input" placeholder="Search by name, ID, or city..." oninput="renderApp()">
+        <select id="filter-category" onchange="renderApp()">
+          <option value="All">All Locality Types</option>
+          <option value="Local">Local</option>
+          <option value="District">District</option>
+          <option value="Within State">Within State</option>
+          <option value="Other State">Other State</option>
+          <option value="International">International</option>
+        </select>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Student</th>
+            <th>Address Details</th>
+            <th>Derived Locality</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="student-table-body">
+          <!-- Rows rendered dynamically -->
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <script>
+    // Home Institution Reference Coordinates
+    const INST = { city: "Kochi", district: "Ernakulam", state: "Kerala", country: "India" };
+
+    // Dynamic Locality Classification Logic
+    function deriveLocality(address) {
+      const norm = (str) => (str || '').trim().toLowerCase();
+      const sameCountry = norm(address.country) === norm(INST.country);
+      const sameState = norm(address.state) === norm(INST.state);
+      const sameDistrict = norm(address.district) === norm(INST.district);
+      const sameCity = norm(address.city) === norm(INST.city);
+
+      if (!sameCountry) return "International";
+      if (!sameState) return "Other State";
+      if (!sameDistrict) return "Within State";
+      if (!sameCity) return "District";
+      return "Local";
+    }
+
+    // 30 Initial Seed Records spanning all 5 Locality Categories
+    let students = [
+      // Local
+      { id: "STU1001", name: "Aarav Sharma", program: "B.Tech CSE", city: "Kochi", district: "Ernakulam", state: "Kerala", country: "India" },
+      { id: "STU1002", name: "Ananya Nair", program: "B.Tech ECE", city: "Kochi", district: "Ernakulam", state: "Kerala", country: "India" },
+      { id: "STU1003", name: "Rohan Varma", program: "B.Tech ME", city: "Kochi", district: "Ernakulam", state: "Kerala", country: "India" },
+      { id: "STU1004", name: "Diya Menon", program: "M.Tech AI", city: "Kochi", district: "Ernakulam", state: "Kerala", country: "India" },
+      { id: "STU1005", name: "Siddharth Kumar", program: "B.Tech EEE", city: "Kochi", district: "Ernakulam", state: "Kerala", country: "India" },
+      { id: "STU1006", name: "Meera Pillai", program: "B.Arch", city: "Kochi", district: "Ernakulam", state: "Kerala", country: "India" },
+
+      // District
+      { id: "STU1007", name: "Kiran Joseph", program: "B.Tech CSE", city: "Aluva", district: "Ernakulam", state: "Kerala", country: "India" },
+      { id: "STU1008", name: "Sneha George", program: "B.Tech CE", city: "Muvattupuzha", district: "Ernakulam", state: "Kerala", country: "India" },
+      { id: "STU1009", name: "Rahul Thomas", program: "MCA", city: "Perumbavoor", district: "Ernakulam", state: "Kerala", country: "India" },
+      { id: "STU1010", name: "Riya Mathew", program: "B.Tech ECE", city: "Angamaly", district: "Ernakulam", state: "Kerala", country: "India" },
+      { id: "STU1011", name: "Arjun Paul", program: "B.Tech ME", city: "Kothamangalam", district: "Ernakulam", state: "Kerala", country: "India" },
+      { id: "STU1012", name: "Tessy Augustine", program: "M.Tech Data Sci", city: "Piravom", district: "Ernakulam", state: "Kerala", country: "India" },
+
+      // Within State
+      { id: "STU1013", name: "Devika Suresh", program: "B.Tech CSE", city: "Trivandrum", district: "Thiruvananthapuram", state: "Kerala", country: "India" },
+      { id: "STU1014", name: "Gautam Das", program: "B.Tech EEE", city: "Kozhikode", district: "Kozhikode", state: "Kerala", country: "India" },
+      { id: "STU1015", name: "Nikhil Raj", program: "B.Tech ME", city: "Thrissur", district: "Thrissur", state: "Kerala", country: "India" },
+      { id: "STU1016", name: "Pooja Hegde", program: "B.Arch", city: "Kottayam", district: "Kottayam", state: "Kerala", country: "India" },
+      { id: "STU1017", name: "Ashwin Mohan", program: "M.Tech ECE", city: "Palakkad", district: "Palakkad", state: "Kerala", country: "India" },
+      { id: "STU1018", name: "Aparna Sen", program: "B.Tech CSE", city: "Kannur", district: "Kannur", state: "Kerala", country: "India" },
+
+      // Other State
+      { id: "STU1019", name: "Vikram Malhotra", program: "B.Tech CSE", city: "Bengaluru", district: "Bengaluru Urban", state: "Karnataka", country: "India" },
+      { id: "STU1020", name: "Aditi Rao", program: "B.Tech ECE", city: "Chennai", district: "Chennai", state: "Tamil Nadu", country: "India" },
+      { id: "STU1021", name: "Priya Sharma", program: "B.Tech CE", city: "Mumbai", district: "Mumbai City", state: "Maharashtra", country: "India" },
+      { id: "STU1022", name: "Kabir Mehta", program: "B.Tech ME", city: "Jaipur", district: "Jaipur", state: "Rajasthan", country: "India" },
+      { id: "STU1023", name: "Shreya Gupta", program: "MCA", city: "Delhi", district: "New Delhi", state: "Delhi", country: "India" },
+      { id: "STU1024", name: "Amitabh Sen", program: "B.Tech CSE", city: "Kolkata", district: "Kolkata", state: "West Bengal", country: "India" },
+
+      // International
+      { id: "STU1025", name: "John Smith", program: "B.Tech CSE", city: "London", district: "Greater London", state: "England", country: "United Kingdom" },
+      { id: "STU1026", name: "Emily Watson", program: "B.Arch", city: "New York", district: "New York", state: "NY", country: "United States" },
+      { id: "STU1027", name: "Tariq Al-Mansoor", program: "M.Tech AI", city: "Dubai", district: "Dubai", state: "Dubai", country: "UAE" },
+      { id: "STU1028", name: "Kenji Sato", program: "B.Tech ECE", city: "Tokyo", district: "Kanto", state: "Tokyo", country: "Japan" },
+      { id: "STU1029", name: "Sarah Jenkins", program: "B.Tech ME", city: "Sydney", district: "NSW", state: "New South Wales", country: "Australia" },
+      { id: "STU1030", name: "Mateo Garcia", program: "B.Tech CSE", city: "Madrid", district: "Madrid", state: "Madrid", country: "Spain" }
+    ];
+
+    function renderApp() {
+      // 1. Calculate Locality for each student
+      const enriched = students.map(s => ({ ...s, category: deriveLocality(s) }));
+
+      // 2. Aggregate Metrics for Dashboard
+      const total = enriched.length;
+      const counts = { Local: 0, District: 0, "Within State": 0, "Other State": 0, International: 0 };
+      enriched.forEach(s => counts[s.category]++);
+
+      document.getElementById('count-local').innerText = counts.Local;
+      document.getElementById('pct-local').innerText = ((counts.Local / total) * 100).toFixed(1) + '% of total';
+
+      document.getElementById('count-district').innerText = counts.District;
+      document.getElementById('pct-district').innerText = ((counts.District / total) * 100).toFixed(1) + '% of total';
+
+      document.getElementById('count-state').innerText = counts["Within State"];
+      document.getElementById('pct-state').innerText = ((counts["Within State"] / total) * 100).toFixed(1) + '% of total';
+
+      document.getElementById('count-otherstate').innerText = counts["Other State"];
+      document.getElementById('pct-otherstate').innerText = ((counts["Other State"] / total) * 100).toFixed(1) + '% of total';
+
+      document.getElementById('count-intl').innerText = counts.International;
+      document.getElementById('pct-intl').innerText = ((counts.International / total) * 100).toFixed(1) + '% of total';
+
+      // 3. Filter Table Results
+      const search = document.getElementById('search-input').value.toLowerCase();
+      const filter = document.getElementById('filter-category').value;
+
+      const filtered = enriched.filter(s => {
+        const matchesSearch = s.name.toLowerCase().includes(search) || s.id.toLowerCase().includes(search) || s.city.toLowerCase().includes(search);
+        const matchesCat = filter === 'All' || s.category === filter;
+        return matchesSearch && matchesCat;
+      });
+
+      // 4. Render Table HTML
+      const tbody = document.getElementById('student-table-body');
+      tbody.innerHTML = filtered.map(s => `
+        <tr>
+          <td>
+            <strong>${s.name}</strong><br>
+            <span style="font-size: 11px; color: #64748b;">${s.id} • ${s.program}</span>
+          </td>
+          <td>
+            ${s.city}, ${s.district}<br>
+            <span style="color: #64748b;">${s.state}, ${s.country}</span>
+          </td>
+          <td>
+            <span class="badge badge-${s.category.replace(/\s+/g, '-')}">${s.category}</span>
+          </td>
+          <td>
+            <button class="btn-edit" onclick="editStudent('${s.id}')">Edit</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // FORM HANDLERS (Create / Update)
+    document.getElementById('student-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const editId = document.getElementById('edit-id').value;
+      const name = document.getElementById('name').value;
+      const program = document.getElementById('program').value;
+      const city = document.getElementById('city').value;
+      const district = document.getElementById('district').value;
+      const state = document.getElementById('state').value;
+      const country = document.getElementById('country').value;
+
+      if (editId) {
+        // UPDATE
+        const idx = students.findIndex(s => s.id === editId);
+        if (idx !== -1) {
+          students[idx] = { id: editId, name, program, city, district, state, country };
+        }
+      } else {
+        // CREATE
+        const newId = `STU${1000 + students.length + 1}`;
+        students.unshift({ id: newId, name, program, city, district, state, country });
+      }
+
+      cancelEdit();
+      renderApp();
+    });
+
+    function editStudent(id) {
+      const s = students.find(item => item.id === id);
+      if (!s) return;
+
+      document.getElementById('edit-id').value = s.id;
+      document.getElementById('name').value = s.name;
+      document.getElementById('program').value = s.program;
+      document.getElementById('city').value = s.city;
+      document.getElementById('district').value = s.district;
+      document.getElementById('state').value = s.state;
+      document.getElementById('country').value = s.country;
+
+      document.getElementById('form-title').innerText = `Edit Address: ${s.id}`;
+      document.getElementById('form-submit-btn').innerText = 'Update & Recalculate';
+      document.getElementById('form-cancel-btn').style.display = 'block';
+    }
+
+    function cancelEdit() {
+      document.getElementById('edit-id').value = '';
+      document.getElementById('student-form').reset();
+      document.getElementById('program').value = 'B.Tech CSE';
+      document.getElementById('country').value = 'India';
+      document.getElementById('form-title').innerText = 'Add New Student Record';
+      document.getElementById('form-submit-btn').innerText = 'Create & Auto-Classify';
+      document.getElementById('form-cancel-btn').style.display = 'none';
+    }
+
+    // Initial render
+    renderApp();
+  </script>
+</body>
+</html>
